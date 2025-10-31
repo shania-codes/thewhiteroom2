@@ -5,5 +5,32 @@ Tasks
 
 
 {% block body %}
+<h2>All Tasks</h2>
+<ul>
+{% for task in all_tasks %}
+<li>
+{# Toggle form #}<form method="POST" style="display:inline;"><input type="hidden" name="completed_task_id" value="{{task[0]}}"><button type="submit">{{ "✅" if task[3] else "⬜" }}</button></form>
+<p style="{{ 'text-decoration: line-through;display:inline;' if task[3] else 'display:inline;' }}" >{{task[1]}}{%if task[2]%} - Due {{task[2]}}{%endif%}{%if task[4]%} - {{task[4]}}{%endif%}</p>
+{# Delete form #}<form method="POST" style="display:inline;"><input hidden name="delete_task_id" value="{{task[0]}}"><button type="submit">Delete task</button></form>
+{# Edit form toggle #}<button type="button" onclick="this.nextElementSibling.style.display = (this.nextElementSibling.style.display === 'none') ? 'inline' : 'none'">Edit</button>
+{# Edit form #}<form method="POST" style="display:none;"><input type="hidden" name="edited_task_id" value="{{task[0]}}"><input type="text" name="edited_name" value="{{task[1]}}" required><input type="date" name="edited_due_date" value="{{task[2]}}"><input type="text" name="edited_description" value="{{task[4]}}"><button type="submit">Save</button></form>
+</li>
+{% endfor %}
+</ul>
+{% if all_tasks == [] %}
+No tasks
+<br><br>
+{% endif %}
 
+
+<button type="button" onclick="this.nextElementSibling.style.display = (this.nextElementSibling.style.display === 'none') ? 'block' : 'none'">Add Task</button>
+<form method="POST" style="display:none;">
+    <input placeholder="Task name" name="new_task_name" required><br>
+    <input placeholder="Due date (optional)" name="due_date" type="date" style="background-color: white; color: black;"><br>
+    <textarea name="description" placeholder="Description (optional)"></textarea><br>
+    <button type="submit">Add new task</button>
+</form>
+
+
+<br><hr>
 {% endblock %}

@@ -1,24 +1,22 @@
 import os
 import sqlite3
 from datetime import datetime
-from flask import Flask, render_template, url_for, request, redirect, g
+from flask import Flask, render_template, url_for, request, redirect, flash
 
 
 app = Flask(__name__)
-DATABASE = os.path.join(app.root_path, 'database.db') 
+app.secret_key = "worst_admin"
+
 
 # SQL
 def get_db():
-    db = getattr(g, "_database", None)
-    if db is None:
-        db = g._database = sqlite3.connect(DATABASE)
+    db = sqlite3.connect("data.db")
     return db
-
-
 def init_db(): # Make the database
     with app.app_context():
         db = get_db()
         cursor = db.cursor()
+
         # userdata table
         cursor.execute("""
                         CREATE TABLE IF NOT EXISTS userdata (
@@ -126,30 +124,33 @@ def init_db(): # Make the database
                        FOREIGN KEY(itemID) REFERENCES savedItems(itemID) ON DELETE CASCADE,
                        PRIMARY KEY(recipeID, itemID)
                        )""")
-        db.commit() # Save tables
-
-
-# Documentation has this, but I don't know what it does
-@app.teardown_appcontext
-def close_connection(exception):
-    db = getattr(g, "_database", None)
-    if db is not None:
+        
+        # Create tables
+        cursor.execute("""
+        CREATE TABLE IF NOT EXISTS tasks (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL,
+            due_date TEXT,
+            is_complete INTEGER NOT NULL DEFAULT 0,
+            description TEXT
+        )
+        """) 
+        
+        db.commit()
         db.close()
+init_db()
 
 
 @app.route("/")
-def index():
-    if os.path.exists("./database.db"): # If ./database.db exists:    
-        db = get_db()
-        cursor = db.cursor()
-        cursor.execute("SELECT name FROM userdata LIMIT 1")
-        result = cursor.fetchone()
-        # Check if name exists and is not empty
-        if result and result[0]:
-            return redirect(url_for("dashboard"))
+def index():  
+    db = get_db()
+    cursor = db.cursor()
+    cursor.execute("SELECT name FROM userdata LIMIT 1")
+    result = cursor.fetchone()
+    # Check if name exists and is not empty
+    if result and result[0]:
+        return redirect(url_for("dashboard"))
     else: # Else go to the first time setup page
-        # Create DB at ./database.db
-        init_db()
         return redirect(url_for("setup"))
     
 
@@ -690,6 +691,80 @@ def recipes():
 #def tasks():
 #    return render_template("tasks.html")
 
+@app.route("/tasks", methods=["GET", "POST"])
+def tasks():
+    if request.method == "POST":
+        # Add task (name, due date, description)
+        if "new_task_name" in request.form:
+            new_task_name = request.form["new_task_name"]
+            description = request.form["description"]
+            
+            # SQL to add the new task to DB
+            db = get_db()
+            cursor = db.cursor()
+
+            if request.form["due_date"]:
+                due_date = request.form["due_date"] # yyyy-mm-dd
+                cursor.execute("INSERT INTO tasks (name, due_date, description) VALUES (?, ?, ?)", (new_task_name, due_date, description,))
+            else:
+                cursor.execute("INSERT INTO tasks (name, description) VALUES (?, ?)", (new_task_name, description,))
+            flash("Task added")
+            db.commit()
+            db.close()
+        
+        # Delete task
+        if "delete_task_id" in request.form:
+            delete_task_id = request.form["delete_task_id"]
+
+            db = get_db()
+            cursor = db.cursor()
+            cursor.execute("DELETE FROM tasks WHERE id = ?", (delete_task_id,))
+            flash("Task deleted")
+            db.commit()
+            db.close()
+
+        # Mark task as (in)complete
+        if "completed_task_id" in request.form:
+            completed_task_id = request.form["completed_task_id"]
+            db = get_db()
+            cursor = db.cursor()
+            cursor.execute("UPDATE tasks SET is_complete = 1 - is_complete WHERE id = ?", (completed_task_id,)) 
+            db.commit()
+            db.close()
+
+        # Edit task
+        if "edited_task_id" in request.form:
+            task_id = request.form["edited_task_id"]
+            new_name = request.form["edited_name"]
+            new_due_date = request.form["edited_due_date"] or None
+            new_description = request.form["edited_description"] or None
+
+            db = get_db()
+            cursor = db.cursor()
+            cursor.execute("UPDATE tasks SET name = ?, due_date = ?, description = ? WHERE id = ?", (new_name, new_due_date, new_description, task_id))
+            flash("Task updated")
+            db.commit()
+            db.close()
+
+
+    return render_template("tasks.html", all_tasks=get_all_tasks())
+
 @app.errorhandler(404)
 def page_not_found(error):
     return "<p>404 error</p>"
+
+
+
+
+
+
+
+# Database functions
+## Get all tasks
+def get_all_tasks():
+    db = get_db()
+    cursor = db.cursor()
+    cursor.execute("SELECT * FROM tasks ORDER BY due_date IS NULL, due_date ASC") # earliest due date first, DESC opposite
+    tasks = cursor.fetchall()
+    db.close()
+    return tasks
