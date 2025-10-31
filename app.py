@@ -976,6 +976,12 @@ def rewards():
     return render_template("rewards.html", coin_balance=get_coin_balance(), rewards=get_all_rewards(), log=get_redemption_log(), coin_goal=get_coin_goal())
 
 
+@app.route("/timers")
+def timers():
+    return render_template("timers.html")
+
+
+
 
 
 

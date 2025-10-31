@@ -2,11 +2,12 @@
 <html lang="en">
 
 <head>
-    <title>Trixie Timer</title>
+    <title>Timers</title>
 </head>
 
 <body>
-<h1>Trixie Timer</h1><hr />
+<a href="/dashboard">Back to Dashboard</a>
+<h1>Timers</h1><hr />
 
 <div id="addBreaks">
     <form id="addBreakForm" method="post">
@@ -25,10 +26,10 @@
 <p>Note: Click the page or the break start and break end audio might not play.</p>
 <!-- Audio elements for alerts -->
 <audio id="breakStartSound" preload="auto">
-<source src="./break-start.mp3">
+<source src="./static/break-start.mp3">
 </audio>
 <audio id="breakCompletedSound" preload="auto">
-<source src="./break-completed.mp3">
+<source src="./static/break-completed.mp3">
 </audio>
 
 
@@ -37,16 +38,17 @@
 
 <style>
 html {
-    background-color: rgb(108,178,234);
+    background-color: black;
     color: white;
-    font-family:sans-serif;
+    font-family: "Trebuchet MS", sans-serif;
 
     height: 100%;
 
-    background-image: url("background.png");
+    background-image: url("./static/timers_background.png");
     background-position: bottom right;
-    background-size: 256px;
+    background-size: 200px;
     background-repeat: no-repeat;
+    /*background-color: rgb(108,178,234);*/
 }
 </style>
 
