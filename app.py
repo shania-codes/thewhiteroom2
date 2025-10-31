@@ -222,7 +222,6 @@ def setup():
         db.close()
         return redirect(url_for("dashboard")) # Redirect to dashboard if username exists
 
-
     if request.method == "POST":
         # Get inputs from form and save them to variables
         name = request.form.get("name").strip()
@@ -267,7 +266,6 @@ def dashboard():
     
     else:
         return redirect(url_for("setup"))
-
 
 
 @app.route("/food/diary", methods=["GET", "POST"])
@@ -741,9 +739,6 @@ def recipes():
 # Add Linear progression routines and other routines too 
 # /weightlifting
 
-#@app.route("/tasks")
-#def tasks():
-#    return render_template("tasks.html")
 
 @app.route("/tasks", methods=["GET", "POST"])
 def tasks():
@@ -802,8 +797,6 @@ def tasks():
 
 
     return render_template("tasks.html", all_tasks=get_all_tasks())
-
-
 
 
 @app.route("/rewards", methods=["GET", "POST"])
@@ -989,20 +982,6 @@ def rewards():
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 # Database functions
 ## Recipes
 ### Get all recipes
@@ -1022,7 +1001,6 @@ def get_all_tasks():
     tasks = cursor.fetchall()
     db.close()
     return tasks
-
 
 
 ## Rewards
@@ -1061,11 +1039,6 @@ def get_coin_goal():
     goal = cursor.fetchone()[0]
     db.close()
     return goal
-
-
-
-
-
 
 
 
