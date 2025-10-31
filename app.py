@@ -147,28 +147,29 @@ def index():
     cursor = db.cursor()
     cursor.execute("SELECT name FROM userdata LIMIT 1")
     result = cursor.fetchone()
+    db.close()
     # Check if name exists and is not empty
-    if result and result[0]:
+    if result and result[0].strip():
         return redirect(url_for("dashboard"))
-    else: # Else go to the first time setup page
+    else:
         return redirect(url_for("setup"))
+        
     
 
 @app.route("/setup", methods=["GET", "POST"])
 def setup():
-    if os.path.exists("./database.db"): # If ./database.db exists:  
-        # If the database already has a name, redirect to dashboard
-        db = get_db()
-        cursor = db.cursor()
-        cursor.execute("SELECT name FROM userdata LIMIT 1")
-        result = cursor.fetchone()
+    db = get_db()
+    cursor = db.cursor()
+    cursor.execute("SELECT name FROM userdata LIMIT 1")
+    result = cursor.fetchone()
 
-        if result and result[0] and result[0].strip():
-            return redirect(url_for("dashboard"))
+    if result:
+        db.close()
+        return redirect(url_for("dashboard")) # Redirect to dashboard if username exists
 
-    if request.method == "POST": #When submit button is pressed
+    if request.method == "POST":
         # Get inputs from form and save them to variables
-        name = request.form.get("name") 
+        name = request.form.get("name").strip()
         weightGoal = request.form.get("weightGoal")
         currentWeight = request.form.get("currentWeight")
         calorieTarget = request.form.get("calorieTarget")
@@ -179,24 +180,25 @@ def setup():
         allergies = request.form.get("allergies")
         dietaryPreferences = request.form.get("dietaryPreferences")
 
-        init_db() # DB CREATION
-        db = get_db()
-        cursor = db.cursor()
-        # Save the value to the userdata table
-        cursor.execute("""
-            INSERT INTO userdata (
-                name, weightGoal, currentWeight, calorieTarget,
-                proteinTarget, carbsTarget, fatTarget, waterTarget,
-                allergies, dietaryPreferences) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""", 
-            (name, weightGoal, currentWeight, calorieTarget,proteinTarget, carbsTarget, fatTarget, waterTarget, allergies, dietaryPreferences))
-        db.commit() # Save
-        return redirect(url_for("dashboard")) # Now that we have saved the user's name redirect to the dashboard
-    return render_template("setup.html") # Else setup for the first time
+        if name != "":
+            # Save the value to the userdata table
+            cursor.execute("""
+                INSERT INTO userdata (
+                    name, weightGoal, currentWeight, calorieTarget,
+                    proteinTarget, carbsTarget, fatTarget, waterTarget,
+                    allergies, dietaryPreferences) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""", 
+                (name, weightGoal, currentWeight, calorieTarget,proteinTarget, carbsTarget, fatTarget, waterTarget, allergies, dietaryPreferences))
+            db.commit() # Save
+            db.close()
+            return redirect(url_for("dashboard")) # Now that we have saved the user's name redirect to the dashboard
+        else:
+            flash("Please input a username")
+            return render_template("setup.html")
 
 
 @app.route("/dashboard")
 def dashboard():
-    if os.path.exists("./database.db"): # If ./database.db exists:  
+    if os.path.exists("./data.db"): # If ./database.db exists:  
         # Get name from the database
         db = get_db()
         cursor = db.cursor()
@@ -205,9 +207,6 @@ def dashboard():
         if result:
             name = result[0]
             return render_template("dashboard.html", name=name)
-    else:
-        # If no name is found, redirect to setup
-        return redirect(url_for("setup"))
 
 
 @app.route("/food/diary", methods=["GET", "POST"])
