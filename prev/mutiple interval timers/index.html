@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>Trixie Timer</title>
+</head>
+
+<body>
+<h1>Trixie Timer</h1><hr />
+
+<div id="addBreaks">
+    <form id="addBreakForm" method="post">
+        <label>Break name:<input id="breakName" /></label><br />
+        <label>Break for:<input type="number" id="breakLength" min="1" max="1439"/>minutes</label><label id=WereChromiumTheGoodGuys></label><br />
+        <label>Every:<input type="number" id="workLength" min="2" max="1440"/>minutes </label><label id=workInterval></label><br />
+        <label>Next break:<input id=nextBreak type="datetime-local"/></label>
+        <button id="saveBreakButton">Save</button>
+    </form>
+</div>
+
+<div id="allBreaks">
+<!--Append all breaks here with timers -->
+</div>
+<hr />
+<p>Note: Click the page or the break start and break end audio might not play.</p>
+<!-- Audio elements for alerts -->
+<audio id="breakStartSound" preload="auto">
+<source src="./break-start.mp3">
+</audio>
+<audio id="breakCompletedSound" preload="auto">
+<source src="./break-completed.mp3">
+</audio>
+
+
+</body>
+</html>
+
+<style>
+html {
+    background-color: rgb(108,178,234);
+    color: white;
+    font-family:sans-serif;
+
+    height: 100%;
+
+    background-image: url("background.png");
+    background-position: bottom right;
+    background-size: 256px;
+    background-repeat: no-repeat;
+}
+</style>
+
+<script>
+// Audio elements
+const breakStartSound = document.getElementById("breakStartSound");
+const breakCompletedSound = document.getElementById("breakCompletedSound");
+
+// Get Save break button for add break form and make it run addBreakForm on click
+const saveBreakButton = document.getElementById("saveBreakButton");
+saveBreakButton.addEventListener("click", addBreakForm);
+
+// addEventListener to breakLength and workLength inputs to make them run onLengthChange function
+const breakLength = document.getElementById("breakLength");
+const workLength = document.getElementById("workLength");
+breakLength.addEventListener("change", onLengthChange);
+workLength.addEventListener("change", onLengthChange);
+
+// init break counter to 0 if it doesn't exist, do nothing if it already exists
+if (localStorage.getItem("breakCounter")) {} // if LS already has a value for breakCounter do nothing
+else {localStorage.setItem("breakCounter", 0);} // else add it with a value of 1
+
+
+// Set next break value to current time and date, there is no way this is the best way to do this.
+let nextBreak = document.getElementById("nextBreak");
+let D = new Date(); 
+dateTimeOnLoad = (D.getFullYear()+'-') // yyyy-
+if ((D.getMonth()+Number(1))<10){dateTimeOnLoad+='0'+(D.getMonth()+Number(1))} else{dateTimeOnLoad+=D.getMonth()} // MM
+dateTimeOnLoad+='-';
+if (D.getDate()<10){dateTimeOnLoad +='0'+D.getDate()}else{dateTimeOnLoad+=D.getDate()} // dd
+dateTimeOnLoad+='T'+String(D.getHours()).padStart(2,'0')+':';
+dateTimeOnLoad += String(D.getMinutes()).padStart(2,'0'); // TODO: update the rest to be like this line
+nextBreak.value = dateTimeOnLoad;
+
+
+// add break form 
+function addBreakForm(event) {
+    event.preventDefault(); // Stops the page from submitting the form as a POST request (I think)
+    // Save the entered values to variables
+    const breakName = document.getElementById("breakName").value;
+    const breakLength = document.getElementById("breakLength").value;
+    const workLength = document.getElementById("workLength").value;
+    nextBreak = document.getElementById("nextBreak").value;
+    
+    let nextBreakMS = new Date(nextBreak).getTime() // UNIX timestamp rounded down to the minute (60000)
+    
+    // If any of the inputs not entered don't do anything
+    if ((breakName == '') || (breakLength == '') || (workLength == '') || (nextBreak == '')) {
+        return(0);
+    } else { // If all inputs have a value:
+        // Save form inputs to local storage
+        localStorage.setItem("breakName"+localStorage.getItem("breakCounter"), breakName);
+        localStorage.setItem("breakLength"+localStorage.getItem("breakCounter"), breakLength);
+        localStorage.setItem("workLength"+localStorage.getItem("breakCounter"), (Number(workLength)-Number(breakLength)));
+
+        // Save nextBreak as unix timestamp
+        localStorage.setItem("nextBreak"+localStorage.getItem("breakCounter"), nextBreakMS);
+
+        // Update breakCounter as a new break has been added 
+        localStorage.setItem("breakCounter", (Number(localStorage.getItem("breakCounter"))+1));
+
+        // Refresh the page to clear the form and make it so that the new timer progress bar is shown
+        location.reload();
+    }
+}
+
+
+// Update form label to show how many minutes they work for (workInterval - breakInterval)
+function onLengthChange() {
+    // get label to put text into (after the every input box)
+    let workIntervalLabel = document.getElementById("workInterval")
+    // get updated values for the two inputs and use type casting to set them as numbers
+    let breakLength = Number(document.getElementById("breakLength").value);
+    let workLength = Number(document.getElementById("workLength").value);
+
+    // Make it so that users can only enter numbers in the minutes boxes
+    if (breakLength != '') {
+        label = document.getElementById("WereChromiumTheGoodGuys");
+        label.innerHTML = " (only enter a number)";
+    };
+
+    // Calculate work interval (workLength-breakLength) and display it to the user
+    if (breakLength<workLength) { // if work interval and break interval are input
+        workIntervalLabel.innerHTML = (" (work for "+(workLength-breakLength)+" minutes)");
+    } else if (breakLength == "" || workLength == "") {// if either is empty do nothing
+    } else { // if both have a value but the break interval is longer than the work interval display an error
+        workIntervalLabel.innerHTML = ("Error: Break is longer than interval");
+    }
+}
+setInterval(onLengthChange, 250)
+
+
+// Create time variables so that they are global
+let hour, minute, time; // Updated every 250ms by updateTimers()
+
+// Create heading at start of div where all progress bars will be updated by updateTimers
+timerDiv = document.getElementById("allBreaks");
+timerDiv.innerHTML =("<h1>Timers:</h1>");
+
+let bars = {}; // Initialise list (object?) for bars
+let labels = {}; // Initialise list for the labels
+// For each break${id}
+let breakCounter = Number(localStorage.getItem("breakCounter"))-1;
+
+// Create a progress element (for each saved timer) with no values 
+while (breakCounter >= 0) {
+    let progress = document.createElement("progress");
+    timerDiv.appendChild(progress);
+    bars[`bar${breakCounter}`] = progress; // Save the bar in bars[barN]
+
+    // Create label that either displays when the next break is HH:MM or when the break ends HH:MM
+    let label = document.createElement("label");
+    label.innerHTML = " placeholder";
+    timerDiv.appendChild(label); // Add the label after it's progress bar
+    labels[`label${breakCounter}`] = label;
+
+    timerDiv.appendChild(document.createElement("br") ); // Add a <br> so next bars are on a new line
+
+    breakCounter--;
+}
+
+
+// Track break states
+const breakStates = {};
+updateTimers(); // ran once on load to init values to hide 250ms delay before loop starts
+function updateTimers() {
+    breakCounter = Number(localStorage.getItem("breakCounter"))-1;
+
+    // Create loop that runs for each break that is saved to local storage
+    while (breakCounter >= 0) {
+        // Get all the saved data for the current break in ms instead of minutes
+        let breakName = localStorage.getItem(`breakName${breakCounter}`);
+        let breakLength = parseInt(localStorage.getItem(`breakLength${breakCounter}`))*60000;
+        let workLength = parseInt(localStorage.getItem(`workLength${breakCounter}`))*60000;
+        let nextBreakMS = localStorage.getItem(`nextBreak${breakCounter}`); // break start ms
+        // Store next break as 
+        let nextBreak = formatUnixTimestamp(Number(nextBreakMS)); // 14/08/2025, 02:00
+
+        // Init state of audio object(?)
+        if (breakStates[breakCounter] === undefined) {breakStates[breakCounter] = false} // False = start break audio not played
+        
+        // Get relevant DOM nodes(?) idk if I used those terms correctly lol but the code works
+        let progress = bars[`bar${breakCounter}`];
+        let label = labels[`label${breakCounter}`];
+
+        let currentTime = new Date().getTime(); // current time as unix timestamp
+
+        // get timestamp of when work interval started so past time isn't included
+        let oldTime = nextBreakMS-workLength;
+
+        // Set labels to something useful
+        // If in work interval
+        if ((currentTime) <= (nextBreakMS)){
+            progress.value = currentTime-oldTime; // time after work started
+            progress.max = workLength; // length of work in ms
+            label.innerHTML = breakName+": Break starts in "+ (Number(parseInt((workLength/60000)-(currentTime-oldTime)/60000))+Number(1)) +" minutes"
+        }
+
+        if (nextBreakMS < currentTime) { // If current time is after the last break
+            if (Number(Number(nextBreakMS)+Number(breakLength)) > currentTime) { //if break in progress
+                let breakLeft = Number(+nextBreakMS + breakLength - currentTime)/60000 + 1;
+
+                progress.value = currentTime-oldTime-workLength; 
+                progress.max = breakLength;
+
+                label.innerHTML = breakName+": Break ends in "+parseInt(breakLeft)+" minutes";
+                
+                if (!breakStates[breakCounter]) {
+                    breakCompletedSound.play();
+                    breakStates[breakCounter] = true;
+                }
+            } else { // if break completed, update next break value (work timer should start)
+                label.innerHTML = breakName+": Break completed, update nextBreak value"
+                nextBreakMS = Number(nextBreakMS) + Number(breakLength) + Number(workLength);
+                localStorage.setItem(`nextBreak${breakCounter}`, nextBreakMS);
+                // play break end noise
+                breakCompletedSound.play();
+            }
+        }
+
+        // decrement the breakCounter so that when the loop next runs it moves on to the next older break
+        breakCounter--;
+    }
+}
+setInterval(updateTimers, 250); // update progress bars
+
+
+function formatUnixTimestamp(unixMs) {
+  const date = new Date(unixMs);
+  
+  const day = String(date.getDate()).padStart(2, '0');
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const year = date.getFullYear();
+  
+  const hours = String(date.getHours()).padStart(2, '0');
+  const minutes = String(date.getMinutes()).padStart(2, '0');
+  
+  return `${day}/${month}/${year}, ${hours}:${minutes}`;
+}
+
+</script>

@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+
+
+{% block title %}
+Taskly
+{% endblock %}
+
+
+{% block body %}
+<h1>Taskly</h1><hr>
+
+
+{% with messages = get_flashed_messages() %}
+{% if messages %}
+<ul>
+    {% for message in messages %}
+    <li class="flash-message">{{ message }}</li>
+    {% endfor %}
+</ul>
+<style> {# AI CSS ngl #}
+.flash-message {
+  background: #222;
+  border: 1px solid #ccc;
+  padding: 4px;
+  margin-bottom: 6px;
+  font-size: 0.9em;
+  overflow: hidden;
+  animation: fadeout-collapse 3s ease-out forwards;
+}
+
+@keyframes fadeout-collapse {
+  0% {
+    opacity: 1;
+    max-height: 50px;
+    margin-bottom: 6px;
+    padding: 4px;
+  }
+  80% {
+    opacity: 1;
+    max-height: 50px;
+    margin-bottom: 6px;
+    padding: 4px;
+  }
+  100% {
+    opacity: 0;
+    max-height: 0;
+    padding: 0;
+    margin-bottom: 0;
+  }
+}
+
+</style>
+{% endif %}
+{% endwith %}
+
+
+<h2>All Tasks</h2>
+<ul>
+{% for task in all_tasks %}
+<li>
+{# Toggle form #}<form method="POST" style="display:inline;"><input type="hidden" name="completed_task_id" value="{{task[0]}}"><button type="submit">{{ "✅" if task[3] else "⬜" }}</button></form>
+<p style="{{ 'text-decoration: line-through;display:inline;' if task[3] else 'display:inline;' }}" >{{task[1]}}{%if task[2]%} - Due {{task[2]}}{%endif%}{%if task[4]%} - {{task[4]}}{%endif%}</p>
+{# Delete form #}<form method="POST" style="display:inline;"><input hidden name="delete_task_id" value="{{task[0]}}"><button type="submit">Delete task</button></form>
+{# Edit form toggle #}<button type="button" onclick="this.nextElementSibling.style.display = (this.nextElementSibling.style.display === 'none') ? 'inline' : 'none'">Edit</button>
+{# Edit form #}<form method="POST" style="display:none;"><input type="hidden" name="edited_task_id" value="{{task[0]}}"><input type="text" name="edited_name" value="{{task[1]}}" required><input type="date" name="edited_due_date" value="{{task[2]}}"><input type="text" name="edited_description" value="{{task[4]}}"><button type="submit">Save</button></form>
+</li>
+{% endfor %}
+</ul>
+{% if all_tasks == [] %}
+No tasks
+<br><br>
+{% endif %}
+
+
+<button type="button" onclick="this.nextElementSibling.style.display = (this.nextElementSibling.style.display === 'none') ? 'block' : 'none'">Add Task</button>
+<form method="POST" style="display:none;">
+    <input placeholder="Task name" name="new_task_name" required><br>
+    <input placeholder="Due date (optional)" name="due_date" type="date" style="background-color: white; color: black;"><br>
+    <textarea name="description" placeholder="Description (optional)"></textarea><br>
+    <button type="submit">Add new task</button>
+</form>
+
+
+<br><hr>
+<!--
+<br>@sapphire on slack if you have any recommendations not in planned features in the readme. 
+<br>Planned to be integrated into The White Room: http://46.101.90.169:5000/dashboard
+<br>CSS is made for eink displays (like a kindle) to be integrated in to a future project
+-->
+{% endblock %}

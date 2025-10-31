@@ -1,0 +1,135 @@
+{% extends "base.html" %}
+
+
+{% block title %}
+Chore Crush Saga
+{% endblock %}
+
+
+{% block body %}
+<h1>Chore Crush Saga</h1><hr>
+
+<h2>Upcoming Chores</h2>
+<ul>
+    {% for due, chore_id, name, desc in sorted_next %}
+        <li>
+            <strong>{{ name }}</strong> - {{ desc or "No description" }}<br>
+            {% if due is string %}
+                <span style="color: orange;">{{ due }}</span>
+            {% else %}
+                {% set is_today = due.date() == now.date() %}
+                <span {% if is_today %}style="color: red;"{% endif %}>
+                    Due: {{ due.strftime('%Y-%m-%d %H:%M') }}
+                </span>
+            {% endif %}
+        </li>
+    {% endfor %}
+</ul>
+<br>
+
+<h2>Users</h2>
+<ul>
+{% for user in all_users %}
+<li>{{ user[1] }}<form method="post"><button type="submit" value="{{ user[0] }}" name="delete_user">Delete User</button></form></li>
+{% endfor %}
+</ul>
+<br>
+
+<h2>Chores</h2>
+<ul>
+{% for chore in all_chores %}
+    <li>
+        <strong>{{ chore[1] }}</strong> - {{ chore[2] or "No description" }}
+        <form method="post" style="display:inline;">
+            <input name="chore_name" value="{{ chore[1] }}">
+            <input name="chore_desc" value="{{ chore[2] }}" placeholder="Description">
+            <input name="chore_rrule" value="{{ chore[3] or '' }}" placeholder="RRULE">
+            <input name="chore_id" type="hidden" value="{{ chore[0] }}">
+            <button type="submit" name="edit_chore">Save</button>
+        </form>
+
+        <form method="post" style="display:inline;">
+            <input type="hidden" name="delete_chore" value="{{ chore[0] }}">
+            <button type="submit">Delete Chore</button>
+        </form>
+
+        <form method="post" style="display:inline;">
+            <input type="hidden" name="chore_id" value="{{ chore[0] }}">
+            <label>User:</label>
+            <select name="user_id">
+                {% for user in all_users %}
+                    <option value="{{ user[0] }}" {% if assignments[chore[0]][0] == user[0] %}selected{% endif %}>
+                        {{ user[1] }}
+                    </option>
+                {% endfor %}
+            </select>
+            <button type="submit" name="assign_user">Save</button>
+        </form>
+
+        {% if chore_steps_map[chore[0]] %}
+            <ul>
+                {% for step in chore_steps_map[chore[0]] %} 
+                    <li>{{ step[1] }} ({{ step[2] or "No description" }}, {{ step[3] or 0 }}s)
+                        <form method="post" style="display:inline;"> {# TODO: Hide edit form and make it switch on, on button press #}
+                            <input name="step_id" type="hidden" value="{{ step[0] }}">
+                            <input name="step_name" value="{{ step[1] }}" required>
+                            <input name="step_desc" value="{{ step[2] or '' }}">
+                            <input name="step_time" type="number" value="{{ step[3] or 0 }}">
+                            <button type="submit" name="edit_step">Save</button>
+                        </form>
+                        <form method="post" style="display:inline;">
+                            <input type="hidden" name="delete_step" value="{{ step[0] }}">
+                            <button type="submit">Delete Step</button>
+                        </form>
+
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p><em>No steps yet</em></p>
+        {% endif %}
+
+        <br>
+    </li>
+{% endfor %}
+</ul>
+
+<h2>Add Users</h2>
+<form method="post">
+    <label>Add user:</label>
+    <input placeholder="Username" name="new_username">
+    <button type="submit" name="add_new_user">Submit</button>
+</form>
+<br>
+
+<h2>Add Chore</h2>
+<form method="post">
+    <input placeholder="Chore Name" name="chore_name" required>
+    <input placeholder="Description" name="chore_desc">
+    <input placeholder="Recurrence Rule (rrule)" name="chore_rrule">
+    <button type="submit" name="add_chore">Add Chore</button>
+</form>
+<br>
+
+<h2>Add Step</h2>
+<form method="post">
+    <input name="step_name" placeholder="Step Name" required>
+    <input name="step_desc" placeholder="Description">
+    <input name="step_time" placeholder="Estimated time (secs)" type="number">
+
+    <label for="chore_select">Assign to Chore:</label>
+    <select name="chore_id" required>
+        {% for chore in all_chores %}
+        <option value="{{ chore[0] }}">{{ chore[1] }}</option>
+        {% endfor %}
+    </select>
+
+    <button type="submit" name="add_step">Add Step</button>
+</form>
+<br>
+
+<br><hr>
+<br>@sapphire on slack if you have any recommendations not in planned features in the readme. 
+<br>Planned to be integrated into The White Room: http://46.101.90.169:5000/dashboard
+<br>CSS is made for eink displays (like a kindle) to be part of a future project
+{% endblock %}

@@ -1,0 +1,198 @@
+{% extends "base.html" %}
+{% block title %}
+Food Diary
+{% endblock %}
+
+{% block body %}
+<h1>Food Diary</h1>
+<a href="/dashboard">Back to Dashboard</a>
+<br>
+<input type="date" id="today" value="">
+
+
+<script>
+let today = document.getElementById("today");
+today.addEventListener("change", onChange)
+function onChange() {
+    let date = (today.value);
+    date = date.split("-");
+    today = date[2]+date[1]+date[0];
+    console.log(today); // DDMMYYYY as expected
+    // go to /food/diary?date=${today} :
+    window.location.href = `/food/diary?date=${today}`;
+}
+</script>
+
+
+<div id="nutritionTotalsWidget" style="border:1px solid black;">
+<p>Calories: {{ current[0] }} {% if targets[0] != '' %}/ {{ targets[0] }}</p><progress value="{{ current[0] }}" max="{{ targets[0] }}"></progress>{% endif %}
+<p>Protein: {{ current[1] }}g {% if targets[1] != '' %}/ {{ targets[1] }}g</p><progress value="{{ current[1] }}" max="{{ targets[1] }}"></progress>{% endif %}
+<p>Carbs: {{ current[2] }}g {% if targets[2] != '' %}/ {{ targets[2] }}g</p><progress value="{{ current[2] }}" max="{{ targets[2] }}"></progress>{% endif %}
+<p>Fat: {{ current[3] }}g {% if targets[3] != '' %}/ {{ targets[3] }}g</p><progress value="{{ current[3] }}" max="{{ targets[3] }}"></progress>{% endif %}
+<p>Water: {{ waterDrank }}ml {% if targets[4] != '' %}/ {{ targets[4] }}ml</p><progress value="{{ waterDrank }}" max="{{ targets[4] }}"></progress>{% endif %}
+
+<form method="post">
+    <button  type="submit" value="subtract" name="action">Subtract Water</button>
+    <input type="number" name="waterAmount" placeholder="Amount (ml)" required>
+    <button  type="submit" value="add" name="action">Add Water</button>
+</form>
+</div>
+
+<div >
+<h1 style="display:inline;">Meals</h1>
+<form method="post" style="display:inline;">
+    <input type="text" name="mealName" placeholder="Breakfast">
+    <button type="submit">Add Meal</button>
+</form>
+</div>
+<br>
+
+{% for meal in todaysMeals %} {# meal= (1, '02082025', 'Other') #}
+
+<div name="mealHeadings" style="display:flex;">
+<h2>{{ meal[2] }}</h2>
+<button onclick="toggleMealEdit('{{ meal[0] }}')">Edit meal name</button>
+{% if todaysMeals|length > 1 %} {# If there is more than 1 meal then you can delete a meal otherwise you can't delete the last remaining meal #}
+<form method="post">
+    <input type="hidden" name="deleteMealID" value="{{ meal[0] }}">
+    <button type="submit" style="background-color: red;">Delete Meal</button>
+</form>
+{% endif %}
+<button onclick="toggleForm('{{ meal[0] }}')">+ Add Food</button>
+<button onclick="toggleInventoryForm('{{meal[0]}}')">+ Add from Inventory</button>
+</div>
+
+<form method="post" id="edit-meal-form-{{ meal[0] }}" style="display: none;">
+    <input type="hidden" name="editMealID" value="{{ meal[0] }}">
+    <input type="text" name="newMealName" value="{{ meal[2] }}" required>
+    <button type="submit">Save</button>
+</form>
+
+{# edit and delete eaten foods form as well as displaying a list of eaten foods #}
+<ul>
+
+    {% for food in allEatenFoods %}
+    {# {{food}}= (1, 'Test', 1.0, 2.0, 3.0, 4.0, 1)     id,name,cal,p,c,f,mealID,quantity       #}
+    {% if food[6] == meal[0] %}
+    <div id = "loggedItem{{food[0]}}" style="display: flex; align-items: start;">
+        <li>
+            <p>{{ food[1] }}:
+                {% if food[2] != 0 %}{{ food[2]*food[7] }} calories{%endif%}
+                {% if food[3] != 0 %}{{ food[3]*food[7] }}g protein{%endif%}
+                {% if food[4] != 0 %}{{ food[4]*food[7] }}g carbs{%endif%}
+                {% if food[5] != 0 %}{{ food[5]*food[7] }}g fat{%endif%}
+                Quantity: {{food[7]}}
+            </p>
+            
+            <!-- Hidden until toggled -->
+            <form method="post" id="edit-form-{{ food[0] }}" style="display: none;">
+                <input type="hidden" name="editFoodID" value="{{ food[0] }}">
+                <label>Name</label>
+                <input type="text" name="eatenName" value="{{ food[1] }}" step="0.1" placeholder="Name"><br>
+                <label>Eaten calories</label>
+                <input type="number" name="eatenCalories" value="{{ food[2] }}" step="0.1" placeholder="Calories"><br>
+                <label>Eaten protein</label>
+                <input type="number" name="eatenProtein" value="{{ food[3] }}" step="0.1" placeholder="Protein"><br>
+                <label>Eaten carbs</label>
+                <input type="number" name="eatenCarbs" value="{{ food[4] }}" step="0.1" placeholder="Carbs"><br>
+                <label>Eaten fat</label>
+                <input type="number" name="eatenFat" value="{% if food[5] %}{{ food[5] }}{% endif %}" step="0.1" placeholder="Fat"><br>
+                <label>Quantity</label>
+                <input type="number" name="quantity" value="{% if food[7] %}{{ food[7] }}{% endif %}" step="0.1" placeholder="Quantity"><br>
+                <button type="submit">Save</button>
+            </form>           
+        </li>
+        <button onclick="toggleEditForm('{{ food[0] }}')">Edit</button>
+
+        <form method="post">
+                <input type="hidden" name="deleteFoodID" value="{{ food[0] }}">
+                <button type="submit" style="background-color: red;">Delete {{ food[1] }}</button>
+        </form>
+        </div>
+    {% endif %}
+    {% endfor %}
+</ul>
+<br>
+
+<div id="inventory-{{meal[0]}}" style="display: none;" method="post">
+<ul>
+{% for item in inventoryData %}
+<li style="display:flex">
+<p>
+{{item[2]}} from: {{item[9]}} -
+Servings left: {{item[3]}}
+{% if item[4] != '' %} - Use By Date: {{item[4]}}{%endif%}
+{% if item[5] != 0 %} - Calories per serving: {{item[5]}}{%endif%}
+{% if item[6] != 0 %} - Protein per serving: {{item[6]}}{%endif%}
+{% if item[7] != 0 %} - Carbs per serving: {{item[7]}}{%endif%}
+{% if item[8] != 0 %} - Fat per serving: {{item[8]}}{%endif%}
+</p>
+<form method="post" >
+<label>&nbsp;Quantity:</label><input name="quantity" type="number" min="0" max="{{item[3]}}" step="0.1" >
+<input type="hidden" name="inventoryID" value="{{item[0]}}">
+<input type="hidden" name="itemID" value="{{item[1]}}">
+<input type="hidden" name="mealID" value="{{ meal[0] }}">
+<button>Add from inventory to meal</button>
+</form>
+</li>
+{% endfor %}
+</div>
+</ul>
+
+
+
+{# Add food to meal form #}
+<form id="form-{{ meal[0] }}" method="post" style="display: none;">
+<input type="hidden" name="mealID" value="{{ meal[0] }}">
+
+<label>Name (optional):</label>
+<input type="text" name="eatenName" id="eatenName{{meal[0]}}" autocomplete="off"><br>
+
+<label>Calories (optional):</label>
+<input type="number" name="eatenCalories"><br>
+
+<label>Protein (optional):</label>
+<input type="number" name="eatenProtein" step="0.1"><br>
+
+<label>Carbs (optional):</label>
+<input type="number" name="eatenCarbs" step="0.1"><br>
+
+<label>Fat (optional):</label>
+<input type="number" name="eatenFat" step="0.1"><br>
+
+<label>Quantity:</label>
+<input type="number" name="eatenQuantity" step="0.1" value="1"><br>
+
+<button type="submit">Add Food</button>
+</form>
+
+{% endfor %}
+
+
+{# Refactor this PURE GARBAGE CODE who even comes up with this GARBAGE #}
+<script>
+function toggleInventoryForm(mealID) { // Add food from inventory form
+    const form = document.getElementById(`inventory-${mealID}`);
+    form.style.display = form.style.display === "none" ? "block" : "none";
+}
+</script>
+<script>
+function toggleForm(mealID) { // Add food form
+    const form = document.getElementById(`form-${mealID}`);
+    form.style.display = form.style.display === "none" ? "block" : "none";
+}
+</script>
+<script>
+function toggleEditForm(foodID) {
+    const form = document.getElementById(`edit-form-${foodID}`);
+    form.style.display = form.style.display === "none" ? "block" : "none";
+}
+</script>
+<script>
+function toggleMealEdit(mealID) {
+    const form = document.getElementById(`edit-meal-form-${mealID}`);
+    form.style.display = form.style.display === "none" ? "block" : "none";
+}
+</script>
+
+{% endblock %}

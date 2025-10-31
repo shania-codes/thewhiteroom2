@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% block title %}
+Setup
+{% endblock %}
+
+
+{% block body %}
+<h1>Welcome to The White Room</h1>
+        <form method="post">
+            <label>Name</label>
+            <input name="name" required><br> 
+
+            <label>Weight Goal (optional)</label>
+            <input name="weightGoal" type="number"><br>
+
+            <label>Current Weight (optional)</label>
+            <input name="currentWeight" type="number"><br>
+
+            <label>Daily Calorie Target (optional)</label>
+            <input name="calorieTarget" type="number"><br>
+
+            <label>Daily Protein Target (g) (optional)</label>
+            <input name="proteinTarget" type="number"><br>
+
+            <label>Daily Carbs Target (g) (optional)</label>
+            <input name="carbsTarget" type="number"><br>
+
+            <label>Daily Fat Target (g) (optional)</label>
+            <input name="fatTarget" type="number"><br>
+
+            <label>Daily Water Target (ml) (optional)</label>
+            <input name="waterTarget" type="number"><br>
+
+            <label>Allergies (optional)</label>
+            <input name="allergies" placeholder="e.g., peanuts, gluten"><br>
+
+            <label>Dietary Preferences (optional)</label>
+            <input name="dietaryPreferences" placeholder="e.g., vegetarian, keto"><br>
+
+            <button type="submit">Submit</button>
+        </form>
+{% endblock %}
+
+

@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+
+{% block title %}
+Dashboard
+{% endblock %}
+
+
+{% block body %}
+<h1>Welcome, {{ name }}</h1>
+<style>
+    ul {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+
+    }
+    li {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+    img {
+    width: 128px;
+    height: 128px;
+    border: 2px solid black;
+    }
+</style>
+<ul>
+    <li><a href="/food/diary"><img src="./static/food_diary_icon.png" /></a>Food Diary</li>
+    <li><a href="/food/inventory"><img src="./static/kitchen_inventory_icon.png" /></a>Kitchen Inventory</li>
+    
+    <!--
+    <li><a href="/food/recipes"><img src="./static/recipes_icon.png" /></a>Recipes</li>
+    <li><a href="/weightlifting"><img src="./static/weightlifting_icon.png" /></a>Weightlifting</li>
+    <li><a href="/runs"><img src="./static/runs_icon.png" /></a>Runs</li>
+    <li><a href="/plans"><img src="./static/plans_icon.png" /></a>Plans</li>
+    <li><a href="/tasks"><img src="./static/tasks_icon.png" /></a>Tasks</li>
+    <li><a href="/time"><img src="./static/time_icon.png" /></a>Time</li>
+    <li><a href="/calendar"><img src="./static/calendar_icon.png" /></a>Calendar</li>
+    <li><a href="/journal"><img src="./static/journal_icon.png" /></a>Journal</li>-->
+    <li><a href="/settings"><img src="./static/settings_icon.png" style="background-color: white;"/></a>Settings</li>
+</ul>
+{% endblock %}

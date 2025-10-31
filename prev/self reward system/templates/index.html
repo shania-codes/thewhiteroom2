@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+
+{% block title %}
+Rewards
+{% endblock %}
+
+{# TODO for TWR change to Rewards #}
+{% block header %}
+Rewards
+{% endblock %}
+
+{% block body %}
+<h2 style="display: inline;">Reward List</h2> <small >Key: Double border = Rewards, costs you coins; Dashed border = No cost, just adds text to log; Dotted border = Gives you coins</small>
+<br><br>
+<form method="post" enctype=multipart/form-data>
+    <p style="display: inline;" >Add reward</p>
+    <input type="text" name="new_reward_name" required placeholder="Reward name">
+    <input type="text" name="description" required placeholder="Description">
+    <input type="number" name="coins" required placeholder="Coin Cost" style="width: 6em;" >
+    <label>Reward Image</label>
+    <input type="file" name="image" accept="image/png, image/jpg, image/jpeg, image/gif">
+    <button  type="submit">Submit</button>
+</form>
+<br><br>
+
+<ul style="padding-left: 0;">
+{% for reward in rewards %}<li style="list-style-type: none;padding: 6px;{% if reward[3] > 0 %}border:4px double white;{% endif %}{% if reward[3] < 0 %}border:5px dotted white;{% endif %}{% if reward[3] == 0 %}border:5px dashed white;{% endif %}">
+{% if reward[5] %}<img src="./static/uploads/{{reward[5]}}" style="max-height: 8em;"><br>{% endif %}
+<form method="POST" style="display: inline;">
+  <input hidden name="redeemed_id" value="{{reward[0]}}">
+  {% if coin_balance >= reward[3] %}
+  <button type="submit">✅ Redeem Reward</button>
+  {% else %}
+  <button type="submit">🔒 Redeem Reward</button>
+  {% endif %}
+</form>
+
+{{reward[1]}} - {{reward[2]}} - Cost: {{reward[3]}} - Redeem Count: {{reward[4]}}
+<form method="POST" style="display: inline;">
+  <input hidden name="reward_id" value="{{reward[0]}}">
+  <button type="submit" name="delete_reward">Delete Reward</button>
+</form>
+<br>
+<form method="POST" style="display: inline;" enctype=multipart/form-data>
+  <input hidden name="edited_reward" value="{{reward[0]}}">
+  <label>Name:</label>
+  <input type="text" name="reward_name" required value="{{reward[1]}}" style="width: 6em;">
+  <label>Description:</label>
+  <input type="text" name="description" required value="{{reward[2]}}">
+  <label>Cost:</label>
+  <input type="number" name="coins" required value="{{reward[3]}}" style="width: 6em;">
+  <label>Image:</label>
+  <input type="file" name="image">  
+  <button type="submit">Update Reward</button>
+</form>
+</li><br>
+{% endfor %}
+</ul>
+
+
+<br><h2>Balance</h2>
+<p>Balance: {{coin_balance}}</p>
+<form method="POST">
+    <button  type="submit" value="subtract" name="action">-</button>
+    <input type="number" name="coins" required style="width: 5em;" placeholder="Coins">
+    <input name="reason" placeholder="Reason (optional)">
+    <button  type="submit" value="add" name="action">+</button>
+</form>
+{% if coin_goal and coin_goal > 0 %}
+{% set progress = (coin_balance / coin_goal) * 100 %}
+<p style="display: inline;" >Coin Goal: {{coin_balance}} / {{coin_goal}} </p><progress max="100" value="{{progress}}"></progress>
+{% endif %}
+<form method="POST">
+  <input type="number" name="coin_goal" placeholder="Coin goal" required>
+  <button type="submit">Set coin goal</button>
+</form>
+<br>
+
+
+<details><summary><h2 style="display: inline;">Log - Click to expand </h2><form method="POST" style="display: inline;"><button type="submit" name="redeem" value="NOT">Delete All Entries</button></form></summary>
+<ul>
+{% for entry in log %} {# Lists most recent redemptions first #}
+<li>{{entry[1]}} - {{entry[2]}}</li>
+<form method="POST" style="display: inline;">
+<input hidden name="entry_id" value="{{entry[0]}}">
+<button type="submit">Delete Entry</button>
+</form>
+{% else %}
+<li>No rewards redeemed.</li>
+{% endfor %}
+</ul>
+</details>
+<br><hr>
+<small>For this demo, you can set your own balance, however once integrated into The White Room you will also be able to get coins from other sources such as completing your to do list tasks, habits, calendar items and chores</small>
+<br><br>@sapphire on slack if you have any recommendations not in planned features in the readme. 
+<br>Planned to be integrated into The White Room: http://46.101.90.169:5000/dashboard
+<br>CSS is made for eink displays (like a kindle)
+{% endblock %}

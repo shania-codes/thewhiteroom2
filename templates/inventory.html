@@ -1,0 +1,264 @@
+{% extends "base.html" %}
+
+{% block title %}
+Kitchen Inventory
+{% endblock %}
+
+{% block body %}
+<h1>Kitchen Inventory</h1>
+<a href="/dashboard">Back to Dashboard</a><br>
+
+{#  #}
+<button onclick="toggleForm('newItemTemplateForm')">Save product</button><br>
+<div id="newItemTemplateForm" style="display: none;">
+<h2>Save new product details</h2>
+<form method="post">
+        <label>Product Name</label>
+        <input type="text" name="newItemName" placeholder="Product Name" required ><br>
+
+        <div style="border: 1px solid black; background-color: #ddd;">
+        <p>Optional:</p>
+        <label>Serving Size</label>
+        <input type="number" name="servingSizeNew" id="servingSizeNew" step="0.1" placeholder="Serving size"><br>
+        <label>Serving Unit</label>
+        <input type="text" name="servingUnitNew" id="servingUnitNew" placeholder="g, ml, cup, cups, etc..."><br>
+        
+        
+        <label>Calories per 100g</label>
+        <input type="number" id="caloriesPer100gNew" name="caloriesPer100gNew" step="0.1" placeholder="Calories per 100g">
+        <label>Calories per serving</label>
+        <input type="number" id="caloriesPerServingNew" name="caloriesPerServingNew" step="0.1" placeholder="Calories per serving"><br>
+        
+        <label>Protein per 100g</label>
+        <input type="number" name="proteinPer100gNew" id="proteinPer100gNew" step="0.1" placeholder="Protein per 100g">
+        <label>Protein per serving</label>
+        <input type="number" name="proteinPerServingNew" id="proteinPerServingNew" step="0.1" placeholder="Protein per serving"><br>
+        
+        <label>Carbs per 100g</label>
+        <input type="number" name="carbsPer100gNew" id="carbsPer100gNew" step="0.1" placeholder="Carbs per 100g">
+        <label>Carbs per serving</label>
+        <input type="number" name="carbsPerServingNew" id="carbsPerServingNew" step="0.1" placeholder="Carbs per serving"><br>
+
+        <label>Fat per 100g</label>
+        <input type="number" name="fatPer100gNew" id="fatPer100gNew" step="0.1" placeholder="Fat per 100g">
+        <label>Fat per serving</label>
+        <input type="number" name="fatPerServingNew" id="fatPerServingNew" step="0.1" placeholder="Fat per serving"><br>
+        
+        <label>Purchase location</label>
+        <input type="text" name="purchaseLocationNew" placeholder="Purchase location"><br>
+
+        <label>Price per item</label>
+        <input type="number" name="pricePerItemNew" step="0.01" placeholder="Price per item" id="pricePerItem"><br>
+        <label>Servings per item</label>
+        <input type="number" name="servingsPerItemNew" step="0.1" placeholder="Servings per item" id="sercingsPerItem"><br>
+
+        <label>Tool (leave unchecked if it is a food or ingredient)</label>
+        <input type="checkbox" name="isToolNew" value="1"><br>
+        </div>
+        
+        <button type="submit">Add new item template</button><br>
+
+<script>
+function updatePerServingDetails() {
+    let servingSize = document.getElementById(`servingSizeNew`).value;
+    let servingUnit = document.getElementById(`servingUnitNew`).value;
+    if (servingSize && (servingUnit == "g" || servingUnit == "grams")) {
+
+        // Update calories per 100g
+        let caloriesServing = document.getElementById(`caloriesPerServingNew`).value;
+        let caloriesPer100g = document.getElementById(`caloriesPer100gNew`);
+        if (caloriesServing) {
+            caloriesPer100g.value = (caloriesServing*(100/servingSize));
+        }
+        // Update protein per 100g
+        let proteinServing = document.getElementById(`proteinPerServingNew`).value;
+        let proteinPer100g = document.getElementById(`proteinPer100gNew`);
+        if (proteinServing) {
+            proteinPer100g.value = (proteinServing*(100/servingSize));
+        }
+        // Update carbs per 100g
+        let carbsServing = document.getElementById(`carbsPerServingNew`).value;
+        let carbsPer100g = document.getElementById(`carbsPer100gNew`);
+        if (carbsServing) {
+            carbsPer100g.value = (carbsServing*(100/servingSize));
+        }
+        // Update fat per 100g
+        let fatServing = document.getElementById(`fatPerServingNew`).value;
+        let fatPer100g = document.getElementById(`fatPer100gNew`);
+        if (fatServing) {
+            fatPer100g.value = (fatServing*(100/servingSize));
+        }
+        
+    }
+
+    
+}
+setInterval(updatePerServingDetails, 405)
+</script>
+
+</form>
+<br>
+</div>
+
+
+<button onclick="toggleForm('newItemInventoryForm')">Add Item to Inventory</button>
+<div id="newItemInventoryForm" style="display: none">
+<h2>Add item to inventory</h2>
+<form method="post">
+        {# Item: itemID, itemName, servingSize, servingUnit, caloriesPerServing, proteinPerServing, carbsPerServing, fatPerServing, caloriesPer100g, proteinPer100g, carbsPer100g, fatPer100g, 12 purchaseLocation, pricePerServing, isTool(1 or None)#}
+        
+        <label>Item </label>
+        <select name="itemID"> {#  #}
+            {% for item in savedItems %}
+            <option value="{{ item[0] }}">{{ item[1] }} {% if item[12] %} from: {{ item[12] }}{% endif %}</option>
+            {% endfor %}
+        </select><br>
+        <label>Purchase date (optional)</label>
+        <input type="date" name="purchaseDate"><br>
+        <label>Use by date (optional)</label>
+        <input type="date" name="useByDate"><br>
+        <label>Servings</label>
+        <input type="number" name="servings" step="0.1" value="1" required><br>
+        <label>Location</label>
+        <input type="text" name="location" placeholder="e.g. Fridge, Freezer, Pantry"><br>
+        <button type="submit">Add item to Inventory</button>
+</form>
+<br>
+</div>
+
+
+
+<h2>Saved Products</h2>
+<ul>
+    {% for item in savedItems %}
+        <li>
+            {{ item[1] }}
+            {# Edit item template form #}
+            <button onclick="toggleEditForm('{{ item[0] }}')">Edit</button>
+            <form method="post">
+                <input type="hidden" name="editItemID" value="{{ item[0] }}">
+                <div style="display: none;" id="editItemTemplate{{ item[0] }}">
+                    <label>Name</label>
+                    <input type="text" name="newItemName" placeholder="Item name" value="{{ item[1] }}" required ><br>
+
+                    <label>Serving Size</label>
+                    <input type="number" name="servingSize" step="0.1" placeholder="Serving size 1dp" value="{{ item[2] }}"><br>
+                    
+                    <label>Serving Unit</label>
+                    <input type="text" name="servingUnit" placeholder="Unit (g, ml, cup, cups, eggs, etc)" value="{{ item[3] }}"><br>
+
+                    <label>Calories per 100g</label>
+                    <input type="number" name="caloriesPer100g" step="0.1" placeholder="Calories per 100g" value="{{ item[8] }}">
+                    <label>Calories per serving</label>
+                    <input type="number" name="caloriesPerServing" step="0.1" placeholder="Calories per serving" value="{{ item[4] }}"><br>
+                    
+                    <label>Protein per 100g</label>
+                    <input type="number" name="proteinPer100g" step="0.1" placeholder="Protein per 100g" value="{{ item[9] }}">
+                    <label>Protein per serving</label>
+                    <input type="number" name="proteinPerServing" step="0.1" placeholder="Protein per serving" value="{{ item[5] }}"><br>
+                    
+                    <label>Carbs per 100g</label>
+                    <input type="number" name="carbsPer100g" step="0.1" placeholder="Carbs per 100g" value="{{ item[10] }}">
+                    <label>Carbs per serving</label>
+                    <input type="number" name="carbsPerServing" step="0.1" placeholder="Carbs per serving" value="{{ item[6] }}"><br>
+                    
+                    <label>Fat per 100g</label>
+                    <input type="number" name="fatPer100g" step="0.1" placeholder="Fat per 100g" value="{{ item[11]}}">
+                    <label>Fat per serving</label>
+                    <input type="number" name="fatPerServing" step="0.1" placeholder="Fat per serving" value="{{ item[7] }}"><br>
+                    
+                    <label>Purchase location</label>
+                    <input type="text" name="purchaseLocation" placeholder="Purchase location" value="{{ item[12] }}"><br>
+
+                    <label>Price per item</label>
+                    <input type="number" name="pricePerItem" step="0.01" placeholder="Price per item" value="{{ item[15] }}"><br>
+                    <label>Servings per item</label>
+                    <input type="number" name="servingsPerItem" step="0.1" placeholder="Servings per item" value="{{ item[16] }}"><br>
+
+                    <label>Tool (leave unchecked if it is a food or ingredient)</label>
+                    <input type="checkbox" name="isTool" value="1" {% if item[14] %}checked{% endif %}><br>
+                    <button type="submit">Update template</button>
+                </div>
+            </form>
+            
+            {# Delete item template form #}
+            <form method="post">
+                <input type="hidden" name="deleteItemTemplate" value="{{ item[0] }}">
+                <button type="submit">Delete Template</button>
+            </form>
+
+
+        </li>
+    {% endfor %}
+</ul>
+
+<br>
+<h2>Current inventory</h2>
+{% for location in allLocations %} 
+<h3>{{ location if location else "Unspecified" }}</h3>
+<ul>
+    {% for item in currentInventory %}
+    {% if item[5] == location %}
+    <li style="{% if item[4] %}background-color:#ddd;{% endif %}{% if item[3] <= now().strftime('%Y-%m-%d') and item[3] != '' %}color:red;{% endif %}">
+        {{item[1]}} - {{item[2]}} servings{% if item[3] %} - Use by: {{item[3]}}{% endif %}
+
+        <button onclick="toggleEditInventoryForm('{{ item[0] }}')">Edit</button>
+        
+        <form method="post">
+            <input type="hidden" name="editInventoryItemID" value="{{ item[0] }}">
+            <div style="display:none;{% if item[4] %} background-color:#ddd; {% endif %}" id="editInventoryForm{{item[0]}}">
+                <label {% if item[4] %}style=" background-color:#ddd;"{% endif %}>Servings</label>
+                <input type="number" name="editServings" step="0.1" value="{{ item[2] }}" required><br>
+
+                <label {% if item[4] %}style=" background-color:#ddd;"{% endif %}>Use by date</label>
+                <input type="date" name="editUseByDate" value="{{item[3]}}"><br>
+
+                <label {% if item[4] %}style=" background-color:#ddd;"{% endif %}>Location</label>
+                <input type="text" name="editLocation" value="{{item[5]}}"><br>
+                
+                <button type="submit">Update</button>
+            </div>
+        </form>
+
+        <form method="post">
+            <input type="hidden" name="deleteInventoryItemID" value="{{item[0]}}">
+            <button type="submit" onclick="return confirm('Delete this item?: {{item[1]}}');">Delete</button>
+        </form>
+    </li>
+    {% endif %}
+    {% endfor %}
+</ul>
+{% endfor %}
+
+<br>
+<h2>Shopping List</h2>
+<small>This show's all item's that you have templates for, but 0 servings of in your inventory.</small>
+<ul>
+{% for item in missingItems %}
+    <li>
+        {{ item[1] }}{% if item[2] %} - Store: {{ item[2] }}{%endif%}{% if item[3] %} - Price: {{ item[3] }}{%endif%}{% if item[4] %} - Servings per item: {{item[4]}}{%endif%}{% if item[5] %} - Price per serving: {{item[5]}}{%endif%}
+    </li>
+{% endfor %}
+</ul>
+
+<script>
+function toggleEditInventoryForm(itemID) {
+    const form = document.getElementById(`editInventoryForm${itemID}`);
+    form.style.display = (form.style.display === "none") ? "block" : "none";
+}
+</script>
+
+<script>
+function toggleEditForm(itemID) {
+    const form = document.getElementById(`editItemTemplate${itemID}`);
+    form.style.display = form.style.display === "none" ? "block" : "none";
+}
+</script>
+
+<script>
+function toggleForm(formID) {
+    const form = document.getElementById(formID);
+    form.style.display = (form.style.display === "none") ? "block" : "none";
+}
+</script>
+{% endblock %}

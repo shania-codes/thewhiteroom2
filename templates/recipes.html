@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}
+Recipes
+{% endblock %}
+
+
+{% block body %}
+<h1>Recipes</h1>
+<a href="/dashboard">Back to Dashboard</a>
+<br>
+
+{# Add Recipe #}
+<form method="post">
+    <div style="display: none;" id="addRecipeForm">
+    
+    <label>Recipe name</label>
+    <input name="newRecipeName"><br>
+
+    
+
+    </div>
+</form>
+
+{# List of Saved Recipes #}
+
+{# Selected Recipe Modal #}
+
+{# Edit recipe - change item id #}
+
+{% endblock %} 
