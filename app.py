@@ -137,7 +137,7 @@ def close_connection(exception):
         db.close()
 
 
-@app.route("/") # App starts here the first page
+@app.route("/")
 def index():
     if os.path.exists("./database.db"): # If ./database.db exists:    
         db = get_db()
