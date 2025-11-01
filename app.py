@@ -3,7 +3,6 @@ import os
 import sqlite3
 from datetime import datetime, timedelta
 from dateutil.rrule import rrulestr, rrule
-from dateutil.parser import ParserError
 from werkzeug.utils import secure_filename
 
 
