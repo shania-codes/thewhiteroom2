@@ -295,14 +295,14 @@ def dashboard():
 
 @app.route("/food/diary", methods=["GET", "POST"])
 def fooddiary():
-    if request.args.get("date"): # /food/diary?date=12345678 prints 12345678
+    if request.args.get("date"): # /food/diary?date=12345678
         # print(request.args.get("date")) = 12345678
         today = request.args.get("date") # Not actually todays date it's which day they selected in the date input
     else: # Actually todays date
         today = datetime.today().strftime("%d%m%Y") # DDMMYYYY
 
     print(request.full_path); # prints /food/diary?date=12345678
-    if not os.path.exists("./database.db"):
+    if not os.path.exists("./data.db"):
         return redirect(url_for("setup"))
     # Check if meals with todays date exists
     db = get_db()
@@ -326,6 +326,7 @@ def fooddiary():
     water = cursor.fetchone()
     if not water:
         cursor.execute("INSERT INTO water (waterDate, amountDrank) VALUES (?, ?)", (today, 0))
+        db.commit()
 
 
     # Get all of today's added meals, and make a list of their IDs, and names
