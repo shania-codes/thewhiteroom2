@@ -135,7 +135,6 @@ def init_db(): # Make the database
                        FOREIGN KEY(itemID) REFERENCES savedItems(itemID) ON DELETE CASCADE,
                        PRIMARY KEY(recipeID, itemID)
                        )""")
-        
         # tasks
         cursor.execute("""
             CREATE TABLE IF NOT EXISTS tasks (
@@ -143,8 +142,7 @@ def init_db(): # Make the database
             name TEXT NOT NULL,
             due_date TEXT,
             is_complete INTEGER NOT NULL DEFAULT 0,
-            description TEXT)""") 
-        
+            description TEXT)""")         
         ## reward_user(s)
         cursor.execute("""
             CREATE TABLE IF NOT EXISTS reward_user (
@@ -152,7 +150,6 @@ def init_db(): # Make the database
             name TEXT NOT NULL,
             balance INTEGER NOT NULL DEFAULT 0,
             coingoal INTEGER NOT NULL DEFAULT 0)""")
-
         ## rewards
         cursor.execute("""
             CREATE TABLE IF NOT EXISTS rewards (
@@ -162,7 +159,6 @@ def init_db(): # Make the database
             cost INTEGER NOT NULL DEFAULT 0,
             count INTEGER NOT NULL DEFAULT 0,
             image TEXT)""") 
-
         ## redeemed rewards
         cursor.execute("""
             CREATE TABLE IF NOT EXISTS redeemed (
@@ -209,8 +205,6 @@ def init_db(): # Make the database
             step_id INTEGER,
             FOREIGN KEY(chore_id) REFERENCES chores(id),
             FOREIGN KEY(step_id) REFERENCES steps(id))""")        
-
-
 
         db.commit()
         db.close()
@@ -293,10 +287,9 @@ def fooddiary():
     if request.args.get("date"): # /food/diary?date=12345678
         # print(request.args.get("date")) = 12345678
         today = request.args.get("date") # Not actually todays date it's which day they selected in the date input
-    else: # Actually todays date
+    else: # Load diary for today's date
         today = datetime.today().strftime("%d%m%Y") # DDMMYYYY
 
-    print(request.full_path); # prints /food/diary?date=12345678
     if not os.path.exists("./data.db"):
         return redirect(url_for("setup"))
     # Check if meals with todays date exists
@@ -309,7 +302,7 @@ def fooddiary():
     
     # Initialise "Other" meal and Water counter
     if not meal: # If there are no meals for today
-        # Make meals for todat
+        # Make meals for today
         cursor.execute("INSERT INTO meals (mealDate, mealName) VALUES (?, ?)", (today, "Breakfast"))
         cursor.execute("INSERT INTO meals (mealDate, mealName) VALUES (?, ?)", (today, "Lunch"))
         cursor.execute("INSERT INTO meals (mealDate, mealName) VALUES (?, ?)", (today, "Dinner"))
@@ -323,8 +316,7 @@ def fooddiary():
         cursor.execute("INSERT INTO water (waterDate, amountDrank) VALUES (?, ?)", (today, 0))
         db.commit()
 
-
-    # Get all of today's added meals, and make a list of their IDs, and names
+    # Get all of today's saved meals
     cursor.execute("SELECT * FROM meals WHERE mealDate = ?", (today,))
     todaysMeals = cursor.fetchall()
 
@@ -341,14 +333,14 @@ def fooddiary():
 
     # Get targets from userdata table
     cursor.execute("SELECT calorieTarget, proteinTarget, carbsTarget, fatTarget, waterTarget FROM userdata LIMIT 1")
-    targets = cursor.fetchone() # no target = '' ex: (1, '', 3, 4, 5) if no protein target and rest as 1345
+    targets = cursor.fetchone() # no target = '' ex: (1, '', 3, 4, 5) if no protein target and rest as 1,3,4,5
 
     # Get water current from water table (amountDrank WHERE waterDATE = DDMMYYYY)
     cursor.execute("SELECT * FROM water WHERE waterDate = ?", (today, ))
     water = cursor.fetchall() # water example: [('02082025', 0)] amountDrank = water[0][1]
 
 
-    # kitchenInventory :
+    # get kitchen inventory
     cursor.execute("""
     SELECT ki.inventoryID, ki.itemID, si.itemName, ki.servings, ki.useByDate,
            si.caloriesPerServing, si.proteinPerServing, si.carbsPerServing, si.fatPerServing, ki.location
@@ -368,7 +360,6 @@ def fooddiary():
         totals[1] += eatenFood[3]*eatenFood[7]
         totals[2] += eatenFood[4]*eatenFood[7]
         totals[3] += eatenFood[5]*eatenFood[7]
-
 
     # if request method POST
     if request.method == "POST":
@@ -394,7 +385,6 @@ def fooddiary():
                 else:
                     cursor.execute("UPDATE kitchenInventory SET servings = ? WHERE inventoryID = ?", (servingsLeft, inventoryID))
                     db.commit()
-                    
                 
                 # Update food diary to add the quantity to todays diary
                 cursor.execute("SELECT caloriesPerServing, proteinPerServing, carbsPerServing, fatPerServing, itemName FROM savedItems WHERE itemID = ?", (itemID, ))
@@ -540,7 +530,6 @@ def inventory():
     cursor.execute("SELECT * FROM kitchenInventory WHERE servings > 1;")
     kitchenInventory=cursor.fetchall()
 
-    
     # Get savedItems table (all saved products that the user plans on rebuying)
     cursor.execute("SELECT * FROM savedItems")
     savedItems=cursor.fetchall()
@@ -559,7 +548,6 @@ def inventory():
     ORDER BY savedItems.isTool ASC, kitchenInventory.useByDate ASC
     """)
     currentInventory = cursor.fetchall()
-
 
     # get all locations
     cursor.execute("SELECT DISTINCT location FROM kitchenInventory")
@@ -594,7 +582,6 @@ def inventory():
         """)
     missingItems = cursor.fetchall() # [(2, 'Frying Pan', "Sainsbury's", None, None),(id, name, store, pricePerItem, servingsPerItem, pricePerServing)]
 
-
     if request.method == "POST":
         # Add new product template to savedItems table
         if "newItemName" in request.form and not "editItemID" in request.form:
@@ -617,7 +604,6 @@ def inventory():
             if pricePerItem and servingsPerItem:
                 pricePerServing = round(pricePerItem/servingsPerItem, 2)
                 print(pricePerServing)
-
             else:
                 pricePerServing = 0
 
@@ -679,10 +665,8 @@ def inventory():
         if "deleteItemTemplate" in request.form:
             deleteItemID = request.form.get("deleteItemTemplate")
             cursor.execute("DELETE FROM savedItems WHERE itemID = ?", (deleteItemID, ))
-            
             # Also delete from kitchenInventory
             cursor.execute("DELETE FROM kitchenInventory WHERE itemID = ?", (deleteItemID,))
-            
             db.commit()
             return redirect(url_for("inventory"))
 
@@ -692,7 +676,6 @@ def inventory():
             editServings = request.form.get("editServings")
             editUseByDate = request.form.get("editUseByDate")
             editLocation = request.form.get("editLocation")
-
             cursor.execute("UPDATE kitchenInventory SET servings = ?, useByDate = ?, location = ? WHERE inventoryID = ?",
                            (editServings, editUseByDate, editLocation, inventoryID))
             db.commit()
@@ -704,7 +687,6 @@ def inventory():
             cursor.execute("DELETE FROM kitchenInventory WHERE inventoryID = ?", (inventoryID, ))
             db.commit()
             return redirect(url_for("inventory"))
-
 
     return render_template("inventory.html", missingItems = missingItems, allLocations = allLocations, savedItems=savedItems, kitchenInventory=kitchenInventory, currentInventory=currentInventory, now=datetime.now) 
 
@@ -747,7 +729,7 @@ def settings():
     return render_template("settings.html", userdata=userdata)
 
 
-@app.route("/food/recipes")
+@app.route("/food/recipes") # TODO
 def recipes():
     if request.method == "POST":
     # Add new recipe form
@@ -758,7 +740,8 @@ def recipes():
 
 
 # Add Linear progression routines and other routines too 
-# /weightlifting
+#@app.route("/weightlifting") # TODO
+#def weightlifting():
 
 
 @app.route("/tasks", methods=["GET", "POST"])
@@ -798,7 +781,7 @@ def tasks():
             completed_task_id = request.form["completed_task_id"]
             db = get_db()
             cursor = db.cursor()
-            cursor.execute("UPDATE tasks SET is_complete = 1 - is_complete WHERE id = ?", (completed_task_id,)) 
+            cursor.execute("UPDATE tasks SET is_complete = 1 - is_complete WHERE id = ?", (completed_task_id,)) # Maths W
             db.commit()
             db.close()
 
@@ -815,7 +798,6 @@ def tasks():
             flash("Task updated")
             db.commit()
             db.close()
-
 
     return render_template("tasks.html", all_tasks=get_all_tasks())
 
@@ -839,10 +821,9 @@ def rewards():
             elif file and allowed_file(file.filename): # If the file exists and it has an allowed name and file extension then save it
                 filename = secure_filename(file.filename)
                 file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-                # TODO replace file name with hash of the file to support images that are the same not being duplicated and images of the same name but are different not overwriting each other
+                # TODO replace file name with hash of the file to support images that are the same but with different file names, not being stored twice. Furthermore images of the same name but are different not overwriting each other.
 
             cursor.execute("INSERT INTO rewards (name, description, cost, image) VALUES (?, ?, ?, ?)", (new_reward_name, description, cost, filename))
-            
             
             flash("Reward added")
             db.commit()
@@ -858,7 +839,6 @@ def rewards():
             db = get_db()
             cursor = db.cursor()
 
-
             file = request.files["image"]
             if file.filename == "": # if no new file is uploaded
                 cursor.execute("UPDATE rewards SET name = ?, description = ?, cost = ? WHERE id = ?", (new_reward_name, new_description, new_cost, edited))
@@ -870,12 +850,10 @@ def rewards():
                     old_path = os.path.join(app.config['UPLOAD_FOLDER'], old_file)
                     if os.path.exists(old_path):
                         os.remove(old_path)
-                
 
                 filename = secure_filename(file.filename)
                 file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename)) # upload new file
                 cursor.execute("UPDATE rewards SET name = ?, description = ?, cost = ?, image = ? WHERE id = ?", (new_reward_name, new_description, new_cost, filename, edited)) # Update DB with new file
-
 
             flash("Reward updated")
             db.commit()
@@ -959,13 +937,11 @@ def rewards():
                 flash("Reward redeemed!")
             else:
                 flash("Not enough coins to redeem this reward.")
-
             db.close()
 
         # Delete redeem log entry
         if "entry_id" in request.form:
             entry_id = request.form["entry_id"]
-
             db = get_db()
             cursor = db.cursor()
             cursor.execute("DELETE FROM redeemed WHERE id = ?", (entry_id,))
@@ -985,7 +961,6 @@ def rewards():
         # Set coin goal
         if "coin_goal" in request.form:
             goal = request.form["coin_goal"]
-
             db = get_db()
             cursor = db.cursor()
             cursor.execute("UPDATE reward_user SET coingoal = ?", (goal,))
@@ -993,12 +968,11 @@ def rewards():
             db.close()
             flash("Coin goal updated")
 
-
     return render_template("rewards.html", coin_balance=get_coin_balance(), rewards=get_all_rewards(), log=get_redemption_log(), coin_goal=get_coin_goal())
 
 
 @app.route("/timers")
-def timers(): # TODO rewrite it but works better
+def timers(): # TODO rewrite it but make it better
     return render_template("timers.html")
 
 
@@ -1133,13 +1107,6 @@ def chores():
     return render_template("chores.html", all_users=get_all_users(), all_chores=all_chores, chore_steps_map=chore_steps_map, assignments=assignments, sorted_next=sorted_next, now=datetime.now())
 
 
-
-
-
-
-
-
-
 # Database functions
 ## Recipes
 ### Get all recipes
@@ -1170,7 +1137,6 @@ def get_all_rewards():
     rewards = cursor.fetchall()
     db.close()
     return rewards
-
 ### Get coin balance
 def get_coin_balance():
     db = get_db()
@@ -1179,7 +1145,6 @@ def get_coin_balance():
     coin_balance = cursor.fetchone()[0]
     db.close()
     return coin_balance
-
 ### Get redemption log
 def get_redemption_log():
     db = get_db()
@@ -1188,7 +1153,6 @@ def get_redemption_log():
     log = cursor.fetchall()
     db.close()
     return log
-
 ### Get coin goal
 def get_coin_goal():
     db = get_db()
@@ -1264,7 +1228,6 @@ def get_chore_next_occurrences():
     occurrences.sort(key=sort_key)
 
     return occurrences
-
 
 
 # Error Handling
