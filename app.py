@@ -213,10 +213,6 @@ def init_db(): # Make the database
 
 
 
-
-
-
-
         db.commit()
         db.close()
 init_db()
@@ -959,7 +955,7 @@ def rewards():
                 # Log redemption
                 log = str(cost_name[0]) + " coins spent - " + cost_name[1]
                 cursor.execute("INSERT INTO redeemed (log) VALUES (?)", (log,))
-                cursor.execute("UPDATE rewards SET count = count + 1 WHERE id = 1")
+                cursor.execute("UPDATE rewards SET count = count + 1 WHERE id = ?", (reward_id,))
                 db.commit()
                 flash("Reward redeemed!")
             else:
