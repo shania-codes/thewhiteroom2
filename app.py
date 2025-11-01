@@ -1,7 +1,9 @@
 from flask import Flask, render_template, url_for, request, redirect, flash
 import os
 import sqlite3
-from datetime import datetime
+from datetime import datetime, timedelta
+from dateutil.rrule import rrulestr, rrule
+from dateutil.parser import ParserError
 from werkzeug.utils import secure_filename
 
 
@@ -135,56 +137,79 @@ def init_db(): # Make the database
                        PRIMARY KEY(recipeID, itemID)
                        )""")
         
-        # Create tables
+        # tasks
         cursor.execute("""
-        CREATE TABLE IF NOT EXISTS tasks (
+            CREATE TABLE IF NOT EXISTS tasks (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             name TEXT NOT NULL,
             due_date TEXT,
             is_complete INTEGER NOT NULL DEFAULT 0,
-            description TEXT
-        )
-        """) 
+            description TEXT)""") 
         
-        ## chore_user(s)
+        ## reward_user(s)
         cursor.execute("""
-        CREATE TABLE IF NOT EXISTS chore_user (
+            CREATE TABLE IF NOT EXISTS reward_user (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             name TEXT NOT NULL,
             balance INTEGER NOT NULL DEFAULT 0,
-            coingoal INTEGER NOT NULL DEFAULT 0
-        )
-        """)
+            coingoal INTEGER NOT NULL DEFAULT 0)""")
 
         ## rewards
         cursor.execute("""
-        CREATE TABLE IF NOT EXISTS rewards (
+            CREATE TABLE IF NOT EXISTS rewards (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             name TEXT NOT NULL,
             description TEXT,
             cost INTEGER NOT NULL DEFAULT 0,
             count INTEGER NOT NULL DEFAULT 0,
-            image TEXT
-        )
-        """) 
+            image TEXT)""") 
 
-        ## redeemed
+        ## redeemed rewards
         cursor.execute("""
-        CREATE TABLE IF NOT EXISTS redeemed (
+            CREATE TABLE IF NOT EXISTS redeemed (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             log TEXT,
-            timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        )
-        """)
+            timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP)""")
 
-        # Create initial user if there isn't one:
-        cursor.execute("SELECT COUNT(*) FROM chore_user")
+        # Create initial user if there isn't one for rewards page (no multi user implemented currently):
+        cursor.execute("SELECT COUNT(*) FROM reward_user")
         user_count = cursor.fetchone()[0]
         if user_count == 0:
-            cursor.execute("INSERT INTO chore_user (name, balance) VALUES (?, ?)", ("User", 0))
+            cursor.execute("INSERT INTO reward_user (name, balance) VALUES (?, ?)", ("User", 0))
 
-
-
+        # chore_users
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS chore_users (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL)""")
+        # chores
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS chores (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL,
+            description TEXT,
+            rrule TEXT)""")
+        # assignments (which users must do which chores?)
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS assignments (
+            user_id INTEGER,
+            chore_id INTEGER,
+            FOREIGN KEY(user_id) REFERENCES chore_users(id),
+            FOREIGN KEY(chore_id) REFERENCES chores(id))""")
+        # steps
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS steps (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL,
+            description TEXT,
+            time INTEGER)""")
+        # Chore steps
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS chore_steps (
+            chore_id INTEGER,
+            step_id INTEGER,
+            FOREIGN KEY(chore_id) REFERENCES chores(id),
+            FOREIGN KEY(step_id) REFERENCES steps(id))""")        
 
 
 
@@ -888,7 +913,7 @@ def rewards():
 
             db = get_db()
             cursor = db.cursor()
-            cursor.execute("UPDATE chore_user SET balance = balance + ?", (coins,))
+            cursor.execute("UPDATE reward_user SET balance = balance + ?", (coins,))
             log = coins + " coins added - " + reason
             cursor.execute("INSERT INTO redeemed (log) VALUES (?)", (log,))
             db.commit()
@@ -905,7 +930,7 @@ def rewards():
             cursor = db.cursor()
 
             if balance >= coins: # in this case balance - coins can't be negative only 0 or more
-                cursor.execute("UPDATE chore_user SET balance = balance - ? WHERE id = 1", (coins,))
+                cursor.execute("UPDATE reward_user SET balance = balance - ? WHERE id = 1", (coins,))
                 
                 log = f"{coins} coins removed - {reason}"
                 cursor.execute("INSERT INTO redeemed (log) VALUES (?)", (log,))
@@ -924,12 +949,12 @@ def rewards():
             cursor = db.cursor()
             cursor.execute("SELECT cost, name FROM rewards WHERE id = ?", (reward_id,))
             cost_name = cursor.fetchone() # Reward cost, reward name
-            cursor.execute("SELECT balance FROM chore_user")
+            cursor.execute("SELECT balance FROM reward_user")
             balance = cursor.fetchone()[0] # User coin balance
 
             if balance >= cost_name[0]:
                 # Deduct coins
-                cursor.execute("UPDATE chore_user SET balance = balance - ? WHERE id = 1", (cost_name[0],))
+                cursor.execute("UPDATE reward_user SET balance = balance - ? WHERE id = 1", (cost_name[0],))
                 # Log redemption
                 log = str(cost_name[0]) + " coins spent - " + cost_name[1]
                 cursor.execute("INSERT INTO redeemed (log) VALUES (?)", (log,))
@@ -967,7 +992,7 @@ def rewards():
 
             db = get_db()
             cursor = db.cursor()
-            cursor.execute("UPDATE chore_user SET coingoal = ?", (goal,))
+            cursor.execute("UPDATE reward_user SET coingoal = ?", (goal,))
             db.commit()
             db.close()
             flash("Coin goal updated")
@@ -977,8 +1002,139 @@ def rewards():
 
 
 @app.route("/timers")
-def timers():
+def timers(): # TODO rewrite it but works better
     return render_template("timers.html")
+
+
+@app.route("/chores", methods=["GET", "POST"])
+def chores():
+    if request.method == "POST":
+        if "add_new_user" in request.form and request.form["new_username"] != "":
+            new_username = request.form["new_username"]
+
+            # TODO: refactor this pattern is repeated in many places in code, also in TWR 
+            db = get_db()
+            cursor = db.cursor()
+            cursor.execute("INSERT INTO chore_users (name) VALUES (?)", (new_username,))
+            db.commit()
+            db.close()
+
+        if "delete_user" in request.form:
+            delete = request.form["delete_user"]
+
+            db = get_db()
+            cursor = db.cursor()
+            cursor.execute("DELETE FROM chore_users WHERE id = ?", (delete,))
+            db.commit()
+            db.close()            
+
+        if "add_chore" in request.form:
+            name = request.form["chore_name"] # Required
+            description = request.form.get("chore_desc") # Optional
+            rrule = request.form.get("chore_rrule")
+
+            # Check rrule validity TODO: Refactor, used in two places
+            try:
+                if rrule:
+                    rrulestr(rrule)
+            except Exception as e:
+                return f"<p>Invalid rrule: {e}</p>"
+
+            db = get_db()
+            cursor = db.cursor()
+            cursor.execute("INSERT INTO chores (name, description, rrule) VALUES (?, ?, ?)",(name, description, rrule))
+            db.commit()
+            db.close()
+
+        if "edit_chore" in request.form:
+            chore_id = request.form["chore_id"]
+            name = request.form["chore_name"]
+            desc = request.form["chore_desc"]
+            rrule_str = request.form.get("chore_rrule", None)
+
+            # Check rrule validity TODO: Refactor, used in two places
+            try:
+                if rrule_str:
+                    rrulestr(rrule_str)
+            except Exception as e:
+                return f"<p>Invalid RRULE: {e}</p>"
+
+            db = get_db()
+            cursor = db.cursor()
+            cursor.execute("UPDATE chores SET name = ?, description = ? WHERE id = ?",(name, desc, chore_id))
+            db.commit()
+            db.close()
+
+        if "add_step" in request.form:
+            name = request.form["step_name"]
+            desc = request.form.get("step_desc")
+            time = request.form.get("step_time")
+            chore_id = request.form["chore_id"]
+
+            db = get_db()
+            cursor = db.cursor()
+            cursor.execute("INSERT INTO steps (name, description, time) VALUES (?, ?, ?)",(name, desc, time))
+            step_id = cursor.lastrowid
+            cursor.execute("INSERT INTO chore_steps (chore_id, step_id) VALUES (?, ?)", (chore_id, step_id))
+            db.commit()
+            db.close()
+
+        if "edit_step" in request.form:
+            step_id = request.form["step_id"]
+            name = request.form["step_name"]
+            desc = request.form["step_desc"]
+            time = request.form.get("step_time")
+
+            db = get_db()
+            cursor = db.cursor()
+            cursor.execute("UPDATE steps SET name = ?, description = ?, time = ? WHERE id = ?",(name, desc, time, step_id))
+            db.commit()
+            db.close()
+
+        if "delete_step" in request.form:
+            step_id = request.form["delete_step"]
+
+            db = get_db()
+            cursor = db.cursor()
+            cursor.execute("DELETE FROM chore_steps WHERE step_id = ?", (step_id,))
+            cursor.execute("DELETE FROM steps WHERE id = ?", (step_id,))
+            db.commit()
+            db.close()
+
+        if "delete_chore" in request.form:
+            chore_id = request.form["delete_chore"]
+
+            db = get_db()
+            cursor = db.cursor()
+
+            # Clean up related records
+            cursor.execute("DELETE FROM chore_steps WHERE chore_id = ?", (chore_id,))
+            cursor.execute("DELETE FROM assignments WHERE chore_id = ?", (chore_id,))
+            cursor.execute("DELETE FROM chores WHERE id = ?", (chore_id,))
+            # Delete orphaned steps:
+            cursor.execute("DELETE FROM steps WHERE id NOT IN (SELECT step_id FROM chore_steps)")
+
+            db.commit()
+            db.close()
+
+        if "assign_user" in request.form:
+            chore_id = request.form["chore_id"]
+            user_id = request.form["user_id"]
+
+            db = get_db()
+            cursor = db.cursor()
+            cursor.execute("DELETE FROM assignments WHERE chore_id = ?", (chore_id,)) # Delete old assignment
+            cursor.execute("INSERT INTO assignments (user_id, chore_id) VALUES (?, ?)", (user_id, chore_id))
+            db.commit()
+            db.close()
+
+
+    all_chores = get_all_chores()
+    chore_steps_map = {chore[0]: get_steps_for_chore(chore[0]) for chore in all_chores}
+    assignments = get_chore_assignments()
+    sorted_next = get_chore_next_occurrences()
+
+    return render_template("chores.html", all_users=get_all_users(), all_chores=all_chores, chore_steps_map=chore_steps_map, assignments=assignments, sorted_next=sorted_next, now=datetime.now())
 
 
 
@@ -1023,7 +1179,7 @@ def get_all_rewards():
 def get_coin_balance():
     db = get_db()
     cursor = db.cursor()
-    cursor.execute("SELECT balance FROM chore_user") 
+    cursor.execute("SELECT balance FROM reward_user") 
     coin_balance = cursor.fetchone()[0]
     db.close()
     return coin_balance
@@ -1041,11 +1197,77 @@ def get_redemption_log():
 def get_coin_goal():
     db = get_db()
     cursor = db.cursor()
-    cursor.execute("SELECT coingoal FROM chore_user")
+    cursor.execute("SELECT coingoal FROM reward_user")
     goal = cursor.fetchone()[0]
     db.close()
     return goal
 
+
+## Chores
+### Get all chore users
+def get_all_users():
+    db = get_db()
+    cursor = db.cursor()
+    cursor.execute("SELECT * FROM chore_users")
+    all = cursor.fetchall()
+    db.close()
+    return all
+### Get all chores
+def get_all_chores():
+    db = get_db()
+    cursor = db.cursor()
+    cursor.execute("SELECT * FROM chores")
+    all = cursor.fetchall()
+    db.close()
+    return all
+### Get steps for chores
+def get_steps_for_chore(chore_id):
+    db = get_db()
+    cursor = db.cursor()
+    cursor.execute("SELECT steps.id, steps.name, steps.description, steps.time FROM chore_steps JOIN steps ON chore_steps.step_id = steps.id WHERE chore_steps.chore_id = ?", (chore_id,))
+    results = cursor.fetchall()
+    db.close()
+    return results
+### Get chore assignments
+def get_chore_assignments():
+    db = get_db()
+    cursor = db.cursor()
+    cursor.execute("""
+        SELECT chores.id, chore_users.id, chore_users.name
+        FROM chores
+        LEFT JOIN assignments ON chores.id = assignments.chore_id
+        LEFT JOIN chore_users ON assignments.user_id = chore_users.id
+    """)
+    rows = cursor.fetchall()
+    db.close()
+    # returns: {chore_id: (user_id, user_name)}
+    return {row[0]: (row[1], row[2]) if row[1] else (None, None) for row in rows}
+### Get chore next occurrences
+def get_chore_next_occurrences():
+    db = get_db()
+    cursor = db.cursor()
+    cursor.execute("SELECT id, name, description, rrule FROM chores WHERE rrule IS NOT NULL")
+    rows = cursor.fetchall()
+    db.close()
+
+    occurrences = []
+    now = datetime.now()
+
+    for chore_id, name, desc, rrule_str in rows:
+        try:
+            rule = rrulestr(rrule_str, dtstart=now)
+            next_occurrence = rule.after(now)
+            occurrences.append((next_occurrence, chore_id, name, desc))
+        except Exception as e:
+            occurrences.append((f"Invalid RRULE: {e}", chore_id, name, desc))
+
+    # Sort: put datetime objects first, then strings (errors)
+    def sort_key(item):
+        return item[0] if isinstance(item[0], datetime) else datetime.max
+
+    occurrences.sort(key=sort_key)
+
+    return occurrences
 
 
 
