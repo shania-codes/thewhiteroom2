@@ -122,7 +122,6 @@ def init_db(): # Make the database
                        recipeID INTEGER PRIMARY KEY AUTOINCREMENT,
                        recipeName TEXT UNIQUE NOT NULL,
                        recipeDescription TEXT,
-                       recipeInstructions TEXT,
                        servingsMade INTEGER,
                        estimatedTime INTEGER
                        )""")
@@ -341,17 +340,8 @@ def fooddiary():
 
 
     # get kitchen inventory
-    cursor.execute("""
-    SELECT ki.inventoryID, ki.itemID, si.itemName, ki.servings, ki.useByDate,
-           si.caloriesPerServing, si.proteinPerServing, si.carbsPerServing, si.fatPerServing, ki.location
-    FROM kitchenInventory ki
-    JOIN savedItems si ON ki.itemID = si.itemID
-    WHERE ki.servings > 0
-    """)
-    inventoryData = cursor.fetchall() 
-    # 0 inventoryID, 1 itemId, 2 itemName, 3 servings, 4 useByDate, 
-    # 5 caloriesPerServing, 6 ProteinPerServing, 7 carbsPerServing, 8 fatPerServing
-    # 9 location where it's stored
+    inventoryData = get_inventory_data()
+    # 0 inventoryID, 1 itemId, 2 itemName, 3 servings, 4 useByDate, 5 caloriesPerServing, 6 ProteinPerServing, 7 carbsPerServing, 8 fatPerServing, 9 location where it's stored
     
     # Calculate and store current for calories and macros
     totals = [0,0,0,0]
@@ -729,18 +719,45 @@ def settings():
     return render_template("settings.html", userdata=userdata)
 
 
-@app.route("/food/recipes") # TODO
+@app.route("/food/recipes", methods=["GET", "POST"]) # TODO
 def recipes():
     if request.method == "POST":
-    # Add new recipe form
-        if newRecipeName in request.form:
-            print("test")
+        print(request.form)
+        # Add new recipe form
+        if "recipeName" in request.form:
+            db = get_db()
+            cursor = db.cursor()
+            recipeName = request.form["recipeName"].strip()
+            recipeDescription = request.form["recipeDescription"].strip() or None
+            servingsMade = request.form["servingsMade"].strip() or None
+            estimatedTime = request.form["estimatedTime"].strip() or None
+            #print(recipeName,recipeDescription,servingsMade,estimatedTime)
+
+            cursor.execute("INSERT INTO recipes (recipeName, recipeDescription, servingsMade, estimatedTime) VALUES (?, ?, ?, ?)", (recipeName, recipeDescription, servingsMade, estimatedTime, ))
+
+            db.commit() # If this fail db locks up or something
+            db.close()
+            flash(f"Recipe: {recipeName} saved")
+
+        if "deleteRecipe" in request.form:
+            deletedID = request.form["deleteRecipe"]
+            db = get_db()
+            cursor = db.cursor()
+            cursor.execute("DELETE FROM recipes WHERE recipeID = ?", (deletedID,))
+            flash("Recipe deleted")
+            # TODO, update when other features are added
+            db.commit()
+            db.close()
+
+    # get kitchen inventory
+    inventoryData = get_inventory_data()
+    # 0 inventoryID, 1 itemId, 2 itemName, 3 servings, 4 useByDate, 5 caloriesPerServing, 6 ProteinPerServing, 7 carbsPerServing, 8 fatPerServing, 9 location where it's stored
             
-    return render_template("recipes.html", recipes=getRecipesTable())
+    return render_template("recipes.html", recipes=getRecipesTable(), inventoryData=inventoryData)
 
 
 # Add Linear progression routines and other routines too 
-#@app.route("/weightlifting") # TODO
+#@app.route("/weightlifting", methods=["GET", "POST"]) # TODO
 #def weightlifting():
 
 
@@ -1115,7 +1132,19 @@ def getRecipesTable():
     cursor = db.cursor()
     cursor.execute("SELECT * FROM recipes;")
     return cursor.fetchall()
-
+### Get inventory data
+def get_inventory_data():
+    db = get_db()
+    cursor = db.cursor()
+    cursor.execute("""
+        SELECT ki.inventoryID, ki.itemID, si.itemName, ki.servings, ki.useByDate,
+            si.caloriesPerServing, si.proteinPerServing, si.carbsPerServing, si.fatPerServing, ki.location
+        FROM kitchenInventory ki
+        JOIN savedItems si ON ki.itemID = si.itemID
+        WHERE ki.servings > 0""")
+    data = cursor.fetchall()
+    db.close()
+    return data
 
 ## Tasks
 ### Get all tasks
