@@ -8,11 +8,11 @@ Recipes
 {% endblock %}
 
 {% block body %}
-<h1>Recipes</h1>
 <a href="/dashboard">Back to Dashboard</a>
 <br>
-
+<br>
 {# Add Recipe #}
+<h2>Add Recipe</h2>
 <form method="post">
     <input hidden name="addRecipeForm">
     <label>Recipe name</label><input name="recipeName" required><br>
@@ -23,8 +23,6 @@ Recipes
 </form>
 
 
-
-
 {#
 <div id="recipe-root" data-recipes='{{ recipes|tojson }}'></div>
 <script type="module" src="{{ url_for('static', filename='js/assets/index-B-2pI71d.js') }}"></script>
@@ -32,6 +30,8 @@ React, can make TWRv3 a Single Page Application (SPA) in the future using this w
 #}
 
 {# List of Saved Recipes #}
+<br>
+<h2>Saved Recipes</h2>
 <ul> 
     {% for recipe in recipes%} 
     <li>
@@ -40,16 +40,42 @@ React, can make TWRv3 a Single Page Application (SPA) in the future using this w
         {% if recipe[4] %} - Time: {{ recipe[4] }}{% endif %}{# Estimated time #} 
         {# Calories and Macros per serving#}
         <form style="display:inline;" method="post"><input hidden name="deleteRecipe" value="{{recipe[0]}}"><button type="submit">Delete Recipe</button></form><br>
-        {% if recipe[2] %}<small>{{ recipe[2] }}</small>{% endif %}{# Description #} 
-    </li> 
-    {% endfor %}
+        {% if recipe[2] %}<small>{{ recipe[2] }}</small>{% endif %}<br>{# Description #} 
+        <form style="display:inline;" method="post"><input hidden name="recipeID" value="{{recipe[0]}}"> <select name="item">{% for item in savedItems %}<option value="{{item[0]}}">{{item[1]}}</option>{%endfor%}</select>
+        <input name="quantity" type="number" placeholder="Quantity / no. servings"><button type="submit">Add item to recipe</button></form>
+            {# Ingredient List #}
+            {% if ingredients[recipe[0]] %}
+                <ul>
+                {% for ingredient in ingredients[recipe[0]] %}
+                    <li>
+                        {{ ingredient.itemName }} ({{ ingredient.quantity }})
+                        <form style="display:inline;" method="post">
+                            <input hidden name="deleteIngredient" value="{{ ingredient.itemID }}">
+                            <input hidden name="recipe_ID" value="{{ recipe[0] }}">
+                            <button type="submit">Delete ingredient</button>
+                        </form>
+                    </li>
+                {% endfor %}
+                </ul>
+            {% endif %}
+        </li> 
+        {% endfor %}
 </ul> 
+
+
+{#
+{{savedItems}}
+known items not items user has in inventory
+0 itemID, 1 itemName, 2 serving size, 3 serving unit, 4 calories per serving, 5 protein per serving, 6 carbs per serving, 7 fat per serving, 8 calories per 100g, 9 protein per 100g, 10 carbs per 100g, 11 fat per 100g, 12 purchase location, 13 price per serving, 14 is tool, 15 price per item, 16 servings per item
+
 {{inventoryData}}
-{# inventoryDate = items in stock not saved products
-0 inventoryID, 1 itemId, 2 itemName, 3 servings, 4 useByDate, 5 caloriesPerServing, 6 ProteinPerServing, 7 carbsPerServing, 8 fatPerServing, 9 location where it's stored #}
+inventoryDate = items in stock not saved products
+0 inventoryID, 1 itemId, 2 itemName, 3 servings, 4 useByDate, 5 caloriesPerServing, 6 ProteinPerServing, 7 carbsPerServing, 8 fatPerServing, 9 location where it's stored 
 
+{{ingredients}}
+{1: ['bread (1.0)', 'cheese (2.0)']}
+recipeID: [itemName (quantity), itemName (quantity)]
+#}
 
-
-{# Edit recipe - change item id #}
 
 {% endblock %} 

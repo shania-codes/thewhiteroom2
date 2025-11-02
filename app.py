@@ -130,6 +130,7 @@ def init_db(): # Make the database
                        CREATE TABLE IF NOT EXISTS recipeItems (
                        recipeID INTEGER,
                        itemID INTEGER,
+                       quantity REAL DEFAULT 1,
                        FOREIGN KEY(recipeID) REFERENCES recipes(recipeID) ON DELETE CASCADE,
                        FOREIGN KEY(itemID) REFERENCES savedItems(itemID) ON DELETE CASCADE,
                        PRIMARY KEY(recipeID, itemID)
@@ -749,11 +750,38 @@ def recipes():
             db.commit()
             db.close()
 
-    # get kitchen inventory
-    inventoryData = get_inventory_data()
-    # 0 inventoryID, 1 itemId, 2 itemName, 3 servings, 4 useByDate, 5 caloriesPerServing, 6 ProteinPerServing, 7 carbsPerServing, 8 fatPerServing, 9 location where it's stored
-            
-    return render_template("recipes.html", recipes=getRecipesTable(), inventoryData=inventoryData)
+        if "recipeID" in request.form:
+            recipeID = request.form["recipeID"]
+            addedItem = request.form["item"]
+            quantity = request.form["quantity"] or 1
+
+            db = get_db()
+            cursor = db.cursor()
+
+            cursor.execute("SELECT recipeName FROM recipes WHERE recipeID = ?", (recipeID,))
+            recipe_name = cursor.fetchone()[0]
+            cursor.execute("SELECT itemName FROM savedItems WHERE itemID = ?", (addedItem,))
+            item_name = cursor.fetchone()[0]
+
+            cursor.execute("INSERT OR IGNORE INTO recipeItems (recipeID, itemID, quantity) VALUES (?, ?, ?)", (recipeID, addedItem, quantity))
+            db.commit()
+            db.close()
+            flash(f"Added {quantity}x {item_name} to {recipe_name}") # TODO include item name and recipe name
+
+        if "deleteIngredient" in request.form:
+            recipeID = request.form["recipe_ID"]
+            itemID = request.form["deleteIngredient"]
+
+            db = get_db()
+            cursor = db.cursor()
+            cursor.execute("DELETE FROM recipeItems WHERE recipeID = ? AND itemID = ?", (recipeID, itemID))
+            db.commit()
+            db.close()
+
+            flash("Ingredient removed from recipe")
+
+
+    return render_template("recipes.html", recipes=getRecipesTable(), inventoryData=get_inventory_data(), savedItems=get_all_saved_items(), ingredients=get_ingredients())
 
 
 # Add Linear progression routines and other routines too 
@@ -1145,6 +1173,41 @@ def get_inventory_data():
     data = cursor.fetchall()
     db.close()
     return data
+### Get all saved items
+def get_all_saved_items():
+    db = get_db()
+    cursor = db.cursor()
+    cursor.execute("SELECT * FROM savedItems")
+    savedItems=cursor.fetchall()
+    db.close()
+    return savedItems
+
+### Get ingredients
+def get_ingredients():
+    db = get_db()
+    cursor = db.cursor()
+    cursor.execute("""
+        SELECT r.recipeID, si.itemID, si.itemName, ri.quantity
+        FROM recipeItems ri
+        JOIN savedItems si ON si.itemID = ri.itemID
+        JOIN recipes r ON r.recipeID = ri.recipeID
+    """)
+    rows = cursor.fetchall()
+    db.close()
+
+    ingredients = {}
+    for recipeID, itemID, itemName, quantity in rows:
+        if recipeID not in ingredients:
+            ingredients[recipeID] = []
+        ingredients[recipeID].append({
+            "itemID": itemID,
+            "itemName": itemName,
+            "quantity": quantity
+        })
+    return ingredients
+
+
+
 
 ## Tasks
 ### Get all tasks
