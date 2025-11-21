@@ -16,12 +16,12 @@ A tree of tasks, habits, routines and resources that guide the user on a self gu
 ### Kitchen Inventory
 ### Recipes
 ### Tasks
-![tasks demo](tasks_demo.gif)
+![tasks demo](./demos/tasks_demo.gif)
 ### Self Reward System
-![rewards demo](rewards_demo.png)
+![rewards demo](./demos/rewards_demo.png)
 ### Interval Timers
 ### Chores
-![chores demo](chores_demo.png)
+![chores demo](./demos/chores_demo.png)
 ### Settings
 Change data from initial setup page
 <!--
