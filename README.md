@@ -13,15 +13,34 @@ A tree of tasks, habits, routines and resources that guide the user on a self gu
 
 ## Older
 ### Food Diary
+<video controls src="demos/food_diary_demo.mp4" title="Food Diary Demo 1"></video>
+
 ### Kitchen Inventory
+<video controls src="demos/kitchen_inventory_demo.mp4" title="Kitchen Inventory Demo"></video>
+
+#### Food Diary Demo 2
+Now that there is items in kitchen inventory you can add them to food diary
+<video controls src="demos/food_diary_demo2.mp4" title="Food Diary Demo 2"></video>
+Adding it to your inventory decrements the quantity added from the amount left in your inventory.
+
 ### Recipes
+<video controls src="demos/recipes_demo.mp4" title="Recipes Demo"></video>
+Work in progress, in the future it will be able to calculate an estimation for the calories and macros of the recipe based on the details saved about the ingredients in kitchen inventory. It will also be able to just add an instance of the recipe to your inventory and from there to your food diary with those calculated calories and macros, and if you made multiple servings then you can easily add it to food diary once you eat the other serving in 3 clicks. 
+
 ### Tasks
-![tasks demo](./demos/tasks_demo.gif)
+<video controls src="demos/tasks_demo.mp4" title="Tasks Demo"></video>
+
 ### Self Reward System
 ![rewards demo](./demos/rewards_demo.png)
+Need to update logic to change "-5 coins spent" to "added 5 coins".
+Not shown: Reward images
+
 ### Interval Timers
+Not fully working, requires updates
+
 ### Chores
 ![chores demo](./demos/chores_demo.png)
+
 ### Settings
 Change data from initial setup page
 <!--

@@ -72,9 +72,9 @@ Chores
                     <li>{{ step[1] }} ({{ step[2] or "No description" }}, {{ step[3] or 0 }}s)
                         <form method="post" style="display:inline;"> {# TODO: Hide edit form and make it switch on, on button press #}
                             <input name="step_id" type="hidden" value="{{ step[0] }}">
-                            <input name="step_name" value="{{ step[1] }}" required>
-                            <input name="step_desc" value="{{ step[2] or '' }}">
-                            <input name="step_time" type="number" value="{{ step[3] or 0 }}">
+                            <input name="step_name" value="{{ step[1] }}" required placeholder="Step name">
+                            <input name="step_desc" value="{{ step[2] or '' }}" placeholder="Description">
+                            <input name="step_time" type="number" value="{{ step[3] or 0 }}" placeholder="Estimated time (s)">
                             <button type="submit" name="edit_step">Save</button>
                         </form>
                         <form method="post" style="display:inline;">
@@ -115,7 +115,7 @@ Chores
 <form method="post">
     <input name="step_name" placeholder="Step Name" required>
     <input name="step_desc" placeholder="Description">
-    <input name="step_time" placeholder="Estimated time (secs)" type="number">
+    <input name="step_time" placeholder="Estimated time (s)" type="number">
 
     <label for="chore_select">Assign to Chore:</label>
     <select name="chore_id" required>

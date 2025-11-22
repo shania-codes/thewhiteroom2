@@ -17,7 +17,7 @@ def fooddiary():
         today = datetime.today().strftime("%d%m%Y") # DDMMYYYY
 
     if not os.path.exists("./data.db"):
-        return redirect(url_for("setup"))
+        return redirect(url_for("isd.setup"))
     # Check if meals with todays date exists
     db = get_db()
     cursor = db.cursor()
@@ -117,7 +117,7 @@ def fooddiary():
                 cursor.execute("INSERT INTO foodDiary (eatenName, eatenCalories, eatenProtein, eatenCarbs, eatenFat, mealID, quantity) VALUES (?, ?, ?, ?, ?, ?, ?)", (itemName, calories, protein, carbs, fat, mealID, quantity))
                 db.commit()
 
-                return redirect(url_for('fooddiary')) # refresh page to update value
+                return redirect(url_for('food.fooddiary')) # refresh page to update value
 
         # Add Meal form
         if "mealName" in request.form: 
@@ -126,7 +126,7 @@ def fooddiary():
                 cursor.execute("INSERT INTO meals (mealDate, mealName) VALUES (?, ?)", (today, mealName))
                 db.commit()
 
-            return redirect(url_for("fooddiary")) # Refresh page
+            return redirect(url_for("food.fooddiary")) # Refresh page
         
         # Add Eaten Food form
         if "mealID" in request.form:
@@ -158,7 +158,7 @@ def fooddiary():
             #eatenID = cursor.lastrowid
             db.commit()
 
-            return redirect(url_for("fooddiary")) # I'm fresh like F5 (refresh the page to show updated info)
+            return redirect(url_for("food.fooddiary")) # I'm fresh like F5 (refresh the page to show updated info)
 
         # Water add and subtract
         if "action" in request.form: 
@@ -171,21 +171,21 @@ def fooddiary():
                 newWater = water[1] + int(waterAmount)
                 cursor.execute("UPDATE water SET amountDrank = ? WHERE waterDate = ?", (newWater, today))
                 db.commit()
-                return redirect(url_for("fooddiary"))
+                return redirect(url_for("food.fooddiary"))
             elif action == "subtract":
                 cursor.execute("SELECT * FROM water WHERE waterDate = ?", (today, ))
                 water = cursor.fetchone() #water[0] = DDMMYYYY date
                 newWater = max(0, water[1] - int(waterAmount)) # Whichever is higher 0 or old water - subtracted amount
                 cursor.execute("UPDATE water SET amountDrank = ? WHERE waterDate = ?", (newWater, today))
                 db.commit()
-                return redirect(url_for("fooddiary"))
+                return redirect(url_for("food.fooddiary"))
         
         # Delete eaten food form
         if "deleteFoodID" in request.form: 
             foodID = request.form["deleteFoodID"]
             cursor.execute("DELETE FROM foodDiary WHERE eatenID = ?", (foodID, ))
             db.commit()
-            return redirect(url_for("fooddiary"))
+            return redirect(url_for("food.fooddiary"))
         
         # Edit eaten food form
         if "editFoodID" in request.form:
@@ -212,7 +212,7 @@ def fooddiary():
 
             cursor.execute("UPDATE foodDiary SET eatenName = ?, eatenCalories = ?, eatenProtein = ?, eatenCarbs = ?, eatenFat = ?, quantity = ? WHERE eatenID = ?", (eatenName, eatenCalories, eatenProtein, eatenCarbs, eatenFat, quantity, foodID))
             db.commit()
-            return redirect(url_for("fooddiary"))
+            return redirect(url_for("food.fooddiary"))
         
         # Delete a meal form 
         if "deleteMealID" in request.form:
@@ -225,7 +225,7 @@ def fooddiary():
                 cursor.execute("DELETE FROM meals WHERE mealID = ?", (mealID, )) # Delete the meal 
                 db.commit()
             
-            return redirect(url_for("fooddiary"))
+            return redirect(url_for("food.fooddiary"))
         
         # Edit meal form (change it's name)
         if "editMealID" in request.form:
@@ -234,7 +234,7 @@ def fooddiary():
             if newName:
                 cursor.execute("UPDATE meals SET mealName = ? WHERE mealID = ?", (newName, mealID))
                 db.commit()
-            return redirect(url_for("fooddiary"))
+            return redirect(url_for("food.fooddiary"))
 
     return render_template("fooddiary.html", inventoryData=inventoryData ,current=totals, waterDrank=water[0][1], targets=targets, todaysMeals=todaysMeals, allEatenFoods=allEatenFoods)
 
@@ -328,7 +328,7 @@ def inventory():
 
             cursor.execute("INSERT INTO savedItems (itemName, servingSize, servingUnit, caloriesPerServing, proteinPerServing, carbsPerServing, fatPerServing, caloriesPer100g, proteinPer100g, carbsPer100g, fatPer100g, purchaseLocation, pricePerServing, isTool, pricePerItem, servingsPerItem) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",(itemName, servingSize, servingUnit, caloriesPerServing, proteinPerServing, carbsPerServing, fatPerServing, caloriesPer100g, proteinPer100g, carbsPer100g, fatPer100g, purchaseLocation, pricePerServing, isTool, pricePerItem, servingsPerItem))
             db.commit()
-            return redirect(url_for("inventory"))
+            return redirect(url_for("food.inventory"))
         
         # Add instance of an item template to kitchen inventory
         if "itemID" in request.form:
@@ -340,7 +340,7 @@ def inventory():
 
             cursor.execute("INSERT INTO kitchenInventory (itemID, purchaseDate, useByDate, servings, location) VALUES (?, ?, ?, ?, ?)", (itemID, purchaseDate, useByDate, servings, location))
             db.commit()
-            return redirect(url_for("inventory"))
+            return redirect(url_for("food.inventory"))
         
         # Edit item template form
         if "editItemID" in request.form:
@@ -376,7 +376,7 @@ def inventory():
             WHERE itemID = ?""", 
             (itemName, servingSize, servingUnit, caloriesPerServing, proteinPerServing, carbsPerServing, fatPerServing, caloriesPer100g, proteinPer100g, carbsPer100g, fatPer100g, purchaseLocation, pricePerServing, isTool, pricePerItem, servingsPerItem, editItemID))
             db.commit()
-            return redirect(url_for("inventory"))
+            return redirect(url_for("food.inventory"))
 
         # Delete item template form
         if "deleteItemTemplate" in request.form:
@@ -385,7 +385,7 @@ def inventory():
             # Also delete from kitchenInventory
             cursor.execute("DELETE FROM kitchenInventory WHERE itemID = ?", (deleteItemID,))
             db.commit()
-            return redirect(url_for("inventory"))
+            return redirect(url_for("food.inventory"))
 
         # Edit item in inventory
         if "editInventoryItemID" in request.form:
@@ -396,14 +396,14 @@ def inventory():
             cursor.execute("UPDATE kitchenInventory SET servings = ?, useByDate = ?, location = ? WHERE inventoryID = ?",
                            (editServings, editUseByDate, editLocation, inventoryID))
             db.commit()
-            return redirect(url_for("inventory"))
+            return redirect(url_for("food.inventory"))
 
         # Delete item from inventory
         if "deleteInventoryItemID" in request.form:
             inventoryID = request.form.get("deleteInventoryItemID")
             cursor.execute("DELETE FROM kitchenInventory WHERE inventoryID = ?", (inventoryID, ))
             db.commit()
-            return redirect(url_for("inventory"))
+            return redirect(url_for("food.inventory"))
 
     return render_template("inventory.html", missingItems = missingItems, allLocations = allLocations, savedItems=savedItems, kitchenInventory=kitchenInventory, currentInventory=currentInventory, now=datetime.now) 
 
