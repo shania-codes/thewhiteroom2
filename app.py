@@ -7,6 +7,7 @@ from werkzeug.utils import secure_filename
 from database import get_db, init_db
 from isd import isd_bp
 from food import food_bp
+from health import health_bp
 from database_functions import *
 
 app = Flask(__name__)
@@ -17,7 +18,7 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 app.register_blueprint(isd_bp)
 app.register_blueprint(food_bp)
-
+app.register_blueprint(health_bp)
 
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True) # Make ./static/uploads if it doesn't exist
 
@@ -29,11 +30,7 @@ def allowed_file(filename):
 init_db()
 
 
-# Add Linear progression routines and other routines too 
-#@app.route("/exercise/weightlifting", methods=["GET", "POST"]) # TODO
-#def weightlifting():
-# /exercise/running
-# /exercise/meditation
+
 
 
 @app.route("/tasks", methods=["GET", "POST"])
