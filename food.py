@@ -2,6 +2,7 @@ from flask import Blueprint, render_template, request, redirect, url_for, flash
 from datetime import datetime
 import os
 from database import get_db
+from database_functions import *
 
 food_bp = Blueprint("food", __name__)
 

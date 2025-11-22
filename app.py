@@ -7,6 +7,7 @@ from werkzeug.utils import secure_filename
 from database import get_db, init_db
 from isd import isd_bp
 from food import food_bp
+from database_functions import *
 
 app = Flask(__name__)
 app.secret_key = "worst_admin"

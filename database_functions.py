@@ -2,14 +2,14 @@ from database import get_db
 from datetime import datetime
 
 
-# NEEDS REFACTORING
-# def fetchall
+# Database Functions
+## def fetchall
 
-# def fetchone
+## def fetchone
 
-# def execute
+## def execute
 
-# Database functions
+
 ## Recipes
 ### Get all recipes
 def getRecipesTable():
@@ -17,6 +17,7 @@ def getRecipesTable():
     cursor = db.cursor()
     cursor.execute("SELECT * FROM recipes;")
     return cursor.fetchall()
+
 ### Get inventory data
 def get_inventory_data():
     db = get_db()
@@ -30,6 +31,7 @@ def get_inventory_data():
     data = cursor.fetchall()
     db.close()
     return data
+
 ### Get all saved items
 def get_all_saved_items():
     db = get_db()
@@ -84,6 +86,7 @@ def get_all_rewards():
     rewards = cursor.fetchall()
     db.close()
     return rewards
+
 ### Get coin balance
 def get_coin_balance():
     db = get_db()
@@ -92,6 +95,7 @@ def get_coin_balance():
     coin_balance = cursor.fetchone()[0]
     db.close()
     return coin_balance
+
 ### Get redemption log
 def get_redemption_log():
     db = get_db()
@@ -100,6 +104,7 @@ def get_redemption_log():
     log = cursor.fetchall()
     db.close()
     return log
+
 ### Get coin goal
 def get_coin_goal():
     db = get_db()
@@ -119,6 +124,7 @@ def get_all_users():
     all = cursor.fetchall()
     db.close()
     return all
+
 ### Get all chores
 def get_all_chores():
     db = get_db()
@@ -127,6 +133,7 @@ def get_all_chores():
     all = cursor.fetchall()
     db.close()
     return all
+
 ### Get steps for chores
 def get_steps_for_chore(chore_id):
     db = get_db()
@@ -135,6 +142,7 @@ def get_steps_for_chore(chore_id):
     results = cursor.fetchall()
     db.close()
     return results
+
 ### Get chore assignments
 def get_chore_assignments():
     db = get_db()
@@ -149,6 +157,7 @@ def get_chore_assignments():
     db.close()
     # returns: {chore_id: (user_id, user_name)}
     return {row[0]: (row[1], row[2]) if row[1] else (None, None) for row in rows}
+
 ### Get chore next occurrences
 def get_chore_next_occurrences():
     db = get_db()
