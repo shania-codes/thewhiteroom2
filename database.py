@@ -4,7 +4,9 @@ import sqlite3
 def get_db():
     db = sqlite3.connect("data.db")
     return db
-def init_db(): # Make the database
+
+
+def init_db():
     db = get_db()
     cursor = db.cursor()
 
