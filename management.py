@@ -3,6 +3,7 @@ from werkzeug.utils import secure_filename
 import os
 from datetime import datetime
 from dateutil.rrule import rrulestr
+from database_functions import *
 
 management_bp = Blueprint("management", __name__)
 
@@ -73,7 +74,6 @@ def tasks():
 @management_bp.route("/rewards", methods=["GET", "POST"])
 def rewards():
     if request.method == "POST":
-        print(request.form)
         # Add reward (name, description, coins)
         if "new_reward_name" in request.form:
             new_reward_name = request.form["new_reward_name"]
