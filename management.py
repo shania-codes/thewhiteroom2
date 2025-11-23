@@ -19,7 +19,7 @@ def routes():
         if "parentNodeID" in request.form:
             print("add child node")
             
-    print(routes)
+    #
 
     return render_template("routes.html", routes=get_all_routes())
 
