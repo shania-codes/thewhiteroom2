@@ -13,10 +13,13 @@ Routes
 <form method="POST">
     <input hidden name="newRoute">
     <!-- Route name, description (also used to make root node) -->
+
     <label>Route Name:</label><br>
     <input name="newRouteName" required placeholder="Route name"><br>
+
     <label>Description:</label><br>
     <input name="newRouteDescription" placeholder="Description"><br>
+
     <button type="submit">Create Route</button>
 </form>
 
@@ -24,6 +27,7 @@ Routes
 <form method="POST">
     <input hidden name="newRouteNode">
     <!-- Name, content, type (root, text (with support for hyperlinks), task, habit, routine) -->
+    
     <label>Select Route:</label>
     <select name="route_id">{% for route in routes %}<option value="{{route[0]}}">{{route[1]}}</option>{% endfor %}</select><br>
 
@@ -39,7 +43,7 @@ Routes
     </select><br>
 
     <label>Step Content:</label>
-    <textarea name="stepContent" placeholder="stepContent"></textarea><br>
+    <textarea name="stepContent" placeholder="Step content"></textarea><br>
 
     <button type="submit">Add Step</button>
 </form>

@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, url_for, flash
+from flask import Blueprint, render_template, request, url_for, flash, redirect
 from werkzeug.utils import secure_filename
 import os
 from datetime import datetime
@@ -13,7 +13,7 @@ def routes():
     if request.method == "POST":
         print(request.form)
         # Create route and root node
-        if "newRouteName" in request.form:
+        if "newRoute" in request.form:
             route_name = request.form["newRouteName"]
             route_description = request.form.get("newRouteDescription") or None
 
@@ -23,8 +23,10 @@ def routes():
             # Create route
             cursor.execute("INSERT INTO routes (name, description) VALUES (?, ?)", (route_name, route_description))
 
+            route_id = cursor.lastrowid
+
             # Create root node
-            cursor.execute("INSERT INTO nodes (name, content, type, status) VALUES (?, ?, ?, ?)", (route_name, route_description, "root", "not_started"))
+            cursor.execute("INSERT INTO nodes (name, content, type, status, route_id) VALUES (?, ?, ?, ?, ?)", (route_name, route_description, "root", "not_started", route_id),)
 
             db.commit()
             db.close()
