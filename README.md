@@ -2,7 +2,7 @@
 > An all-in-one Self Management Framework
 
 Has features for calories and macro tracking, water tracking, kitchen inventory tracking (Product details including calories and macros per serving and per 100g and price and purchase location and price per item and servings per item and whether it is a tool or not also it generates a shopping list based on what you have in your inventory and saved products), recipe saving using saved products, task management with name description and due dates and marking as complete or incomplete, Innovative self reward system with rewards, punishments, and neutral entries that don't change coin balance but save a message to the log, multiple interval timers page that allow you to add multiple timers for different breaks, multi user chore management system with steps for the chores and RRULEs for repetition of the chores, settings page to change saved user data from initial setup page.
-<!-- TODO Rewrite the above section to be below the older features sub headings and also add any missing demos and update the other demos -->
+<!-- TODO Rewrite the above section to be below the older features sub headings -->
 
 # Features
 ## New
@@ -43,6 +43,7 @@ Not fully working, requires updates
 
 ### Settings
 Change data from initial setup page
+![settings demo](demos/settings_demo.png)
 <!--
 ## Planned
 -->

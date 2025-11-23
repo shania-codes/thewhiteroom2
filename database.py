@@ -186,7 +186,20 @@ def init_db():
         chore_id INTEGER,
         step_id INTEGER,
         FOREIGN KEY(chore_id) REFERENCES chores(id),
-        FOREIGN KEY(step_id) REFERENCES steps(id))""")        
+        FOREIGN KEY(step_id) REFERENCES steps(id))""")  
+
+    # Routes
+    ## Nodes
+    cursor.execute("CREATE TABLE IF NOT EXISTS nodes (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, content TEXT, type TEXT, status TEXT, estimated_time TEXT)")
+    # id, name, content, type (text,task,habit,routine), status (notdone, in_progress, done), estimated_time, metadata (stores task habit or routine details to add the expected item to task management)
+
+    ## Routes
+    cursor.execute("CREATE TABLE IF NOT EXISTS routes (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, description TEXT, root_node INTEGER, status TEXT, FOREIGN KEY (root_node) REFERENCES nodes(id))")
+    # id, name, description, root_node(FK node_id), status (notdone, in_progress, done) 
+
+    ## Adjacency List
+    cursor.execute("CREATE TABLE IF NOT EXISTS adjacency_list (id INTEGER PRIMARY KEY AUTOINCREMENT, parent INTEGER, child INTEGER, FOREIGN KEY (parent) REFERENCES nodes(id), FOREIGN KEY (child) REFERENCES nodes(id))")
+    #id, parent (FK node id), child (FK node id)
 
     db.commit()
     db.close()
