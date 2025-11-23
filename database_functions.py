@@ -10,6 +10,14 @@ from datetime import datetime
 ## def execute
 
 
+## Routes
+### Get all routes
+def get_all_routes():
+    db = get_db()
+    cursor = db.cursor()
+    cursor.execute("SELECT * FROM routes;")
+    return cursor.fetchall()  
+
 ## Recipes
 ### Get all recipes
 def getRecipesTable():

@@ -10,7 +10,18 @@ management_bp = Blueprint("management", __name__)
 
 @management_bp.route("/routes", methods=["GET", "POST"])
 def routes():
-    return render_template("routes.html")
+    if request.method == "POST":
+        # Create route and root node
+        if "newRouteName" in request.form:
+            print("add root node and save route details")
+
+        # Add child nodes to route tree
+        if "parentNodeID" in request.form:
+            print("add child node")
+            
+    print(routes)
+
+    return render_template("routes.html", routes=get_all_routes())
 
 
 @management_bp.route("/tasks", methods=["GET", "POST"])

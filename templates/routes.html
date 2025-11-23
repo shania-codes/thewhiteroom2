@@ -9,5 +9,23 @@ Routes
 <h1>Routes</h1>
 <a href="/dashboard">Back to Dashbaord</a>
 
+<h2>Create New Route</h2>
+<form method="POST">
+    <input hidden name="newRoute">
+    <!-- Route name, description (also used to make root node) -->
+    <label>Route Name:</label><br>
+    <input name="newRouteName" required placeholder="Route name"><br>
+    <label>Description:</label><br>
+    <input name="newRouteDescription" placeholder="Description"><br>
+    <button type="submit">Create Route</button>
+</form>
+
+<h3>Add Route Steps</h3>
+<form method="POST">
+    <input hidden name="newRouteNode">
+    <!-- Name, content, type (root, text (with support for hyperlinks), task, habit, routine) -->
+    <select>{% for route in routes %}<option>{{route[1]}}</option>{% endfor %}</select>
+</form>
+
 
 {% endblock %}

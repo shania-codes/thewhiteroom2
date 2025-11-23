@@ -190,11 +190,11 @@ def init_db():
 
     # Routes
     ## Nodes
-    cursor.execute("CREATE TABLE IF NOT EXISTS nodes (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, content TEXT, type TEXT, status TEXT, estimated_time TEXT)")
-    # id, name, content, type (text,task,habit,routine), status (notdone, in_progress, done), estimated_time, metadata (stores task habit or routine details to add the expected item to task management)
+    cursor.execute("CREATE TABLE IF NOT EXISTS nodes (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, content TEXT, type TEXT, status TEXT DEFAULT 'not_started', estimated_time TEXT)")
+    # id, name, content, type (root, text (with support for hyperlinks), task, habit, routine), status (notdone, in_progress, done), estimated_time, metadata (stores task habit or routine details to add the expected item to task management)
 
     ## Routes
-    cursor.execute("CREATE TABLE IF NOT EXISTS routes (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, description TEXT, root_node INTEGER, status TEXT, FOREIGN KEY (root_node) REFERENCES nodes(id))")
+    cursor.execute("CREATE TABLE IF NOT EXISTS routes (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, description TEXT, root_node INTEGER, status TEXT DEFAULT 'not_started', FOREIGN KEY (root_node) REFERENCES nodes(id))")
     # id, name, description, root_node(FK node_id), status (notdone, in_progress, done) 
 
     ## Adjacency List
