@@ -3,11 +3,30 @@ from datetime import datetime
 
 
 # Database Functions
-## def fetchall
+def fetchall(query, params=()):
+    db = get_db()
+    cursor = db.cursor()
+    cursor.execute(query, params)
+    rows = cursor.fetchall()
+    db.close()
+    return rows
 
-## def fetchone
+def fetchone(query, params=()):
+    db = get_db()
+    cursor = db.cursor()
+    cursor.execute(query, params)
+    row = cursor.fetchone()
+    db.close()
+    return row
 
-## def execute
+def execute(query, params):
+    db = get_db()
+    cursor = db.cursor()
+    cursor.execute(query, params)
+    db.commit()
+    last_id = cursor.lastrowid
+    db.close()
+    return last_id
 
 
 ## Routes
@@ -17,6 +36,22 @@ def get_all_routes():
     cursor = db.cursor()
     cursor.execute("SELECT * FROM routes;")
     return cursor.fetchall()  
+
+### Get all nodes of a route
+def get_all_route_nodes(route_id):
+    return fetchall("SELECT * FROM nodes WHERE route_id = ?", (route_id,))
+
+### Get all edges of a route
+def get_all_edges(route_id):
+    return fetchall("SELECT * FROM adjacency_list WHERE route_id = ?", (route_id,))
+
+### Delete route
+def delete_route(route_id):
+    execute("DELETE FROM nodes WHERE route_id = ?", (route_id,))
+    execute("DELETE FROM routes WHERE id = ?", (route_id,))
+
+def delete_step(step_id):
+    execute("DELETE FROM nodes WHERE id = ?", (step_id,))
 
 ## Recipes
 ### Get all recipes

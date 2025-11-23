@@ -14,10 +14,10 @@ Routes
     <input hidden name="newRoute">
     <!-- Route name, description (also used to make root node) -->
 
-    <label>Route Name:</label><br>
+    <label>Route Name:</label>
     <input name="newRouteName" required placeholder="Route name"><br>
 
-    <label>Description:</label><br>
+    <label>Route Description:</label>
     <input name="newRouteDescription" placeholder="Description"><br>
 
     <button type="submit">Create Route</button>
@@ -48,5 +48,38 @@ Routes
     <button type="submit">Add Step</button>
 </form>
 
+
+<br><hr><br>
+<h2>Existing Routes</h2>
+
+{% for route in routes %}
+<h3>{{route[1]}}</h3>
+<p>{{route[2]}}</p>
+
+<form method="POST" style="display:inline">
+    <input type="hidden" name="deleteRoute">
+    <input type="hidden" name="route_id" value="{{route[0]}}">
+    <button style="color:red">Delete Route</button>
+</form>
+<br>
+<strong>Steps:</strong>
+<ul>
+    {% for node in get_all_route_nodes(route[0]) %}
+        {% if node[3] != "root" %} 
+        {# stops root node from rendering since it contains same information as the route name and description #}
+        <li>
+            <strong>{{ node[1] }}</strong>
+            <small>{{ node[3] }}</small>
+            <em>{{ node[2] }}</em>
+            <form method="POST" style="display: inline;">
+                <input type="hidden" name="deleteStep">
+                <input type="hidden" name="step_id" value="{{ node[0] }}">
+                <button style="color:red;">Delete Step</button>
+            </form>
+        </li>
+        {% endif %}
+    {% endfor %}
+</ul>
+{% endfor %}
 
 {% endblock %}

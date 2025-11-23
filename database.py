@@ -199,8 +199,8 @@ def init_db():
     # id, name, description, root_node(FK node_id), status (notdone, in_progress, done) 
 
     ## Adjacency List
-    cursor.execute("CREATE TABLE IF NOT EXISTS adjacency_list (id INTEGER PRIMARY KEY AUTOINCREMENT, parent INTEGER, child INTEGER, FOREIGN KEY (parent) REFERENCES nodes(id) ON DELETE CASCADE, FOREIGN KEY (child) REFERENCES nodes(id) ON DELETE CASCADE, UNIQUE(parent,child))")
-    #id, parent (FK node id), child (FK node id)
+    cursor.execute("CREATE TABLE IF NOT EXISTS adjacency_list (id INTEGER PRIMARY KEY AUTOINCREMENT, route_id INTEGER, parent INTEGER, child INTEGER, FOREIGN KEY (route_id) REFERENCES routes(id) ON DELETE CASCADE, FOREIGN KEY (parent) REFERENCES nodes(id) ON DELETE CASCADE, FOREIGN KEY (child) REFERENCES nodes(id) ON DELETE CASCADE, UNIQUE(parent,child))")
+    #id, route_id (FK route id) parent (FK node id), child (FK node id)
 
     db.commit()
     db.close()

@@ -50,10 +50,22 @@ def routes():
             flash("Step added.")
             return redirect("/routes")
             
+        if "deleteRoute" in request.form:
+            route_id = request.form["route_id"]
+            delete_route(route_id)
+            flash("Route deleted.")
+            return redirect("/routes")
+
+        if "deleteStep" in request.form:
+            step_id = request.form["step_id"]
+            delete_step(step_id)
+            flash("Step deleted.")
+            return redirect("/routes")
+            
             
     #
 
-    return render_template("routes.html", routes=get_all_routes())
+    return render_template("routes.html", routes=get_all_routes(), get_all_route_nodes=get_all_route_nodes)
 
 
 @management_bp.route("/tasks", methods=["GET", "POST"])
