@@ -11,13 +11,43 @@ management_bp = Blueprint("management", __name__)
 @management_bp.route("/routes", methods=["GET", "POST"])
 def routes():
     if request.method == "POST":
+        print(request.form)
         # Create route and root node
         if "newRouteName" in request.form:
-            print("add root node and save route details")
+            route_name = request.form["newRouteName"]
+            route_description = request.form.get("newRouteDescription") or None
+
+            db = get_db()
+            cursor = db.cursor()
+
+            # Create route
+            cursor.execute("INSERT INTO routes (name, description) VALUES (?, ?)", (route_name, route_description))
+
+            # Create root node
+            cursor.execute("INSERT INTO nodes (name, content, type, status) VALUES (?, ?, ?, ?)", (route_name, route_description, "root", "not_started"))
+
+            db.commit()
+            db.close()
+            flash("Route created.")
+            return redirect("/routes")
 
         # Add child nodes to route tree
-        if "parentNodeID" in request.form:
-            print("add child node")
+        if "newRouteNode" in request.form:
+            route_id = request.form["route_id"]
+            step_name = request.form["stepName"]
+            step_type = request.form["stepType"]
+            step_content = request.form["stepContent"]
+
+            db = get_db()
+            cursor = db.cursor()
+
+            cursor.execute("INSERT INTO nodes (name, content, type, status, route_id) VALUES (?, ?, ?, ?, ?)", (step_name, step_content, step_type, "not_started", route_id))
+
+            db.commit()
+            db.close()
+            flash("Step added.")
+            return redirect("/routes")
+            
             
     #
 
