@@ -25,9 +25,6 @@ What I actually managed to implement so far:
 - Delete steps
 - Delete routes
 
-### Routes
-- Placeholder pages for meditation, runs and weightlifting
-
 ## Older
 ### Food Diary
 ![Food Diary Demo 1](./demos/food_diary_demo.gif)
