@@ -7,12 +7,15 @@ Has features for calories and macro tracking, water tracking, kitchen inventory 
 
 
 # Features
-## New
+## Week 13 - Winter Theme:
 ### Meditation
 A timer that supports playing custom audios at the start, end, and at **customisable** time intervals. Can also be used to make things like custom couch to 5k routines with custom voices such as TTS or anything else the user can imagine.
 
 
-## Older
+## Week 12 - Framework Theme:
+The White Room is
+> An all-in-one Self Management Framework
+and the following feature is a framework to plan and do **anything** such as learn languages or instruments or even the correct watch order for a series you are watching:
 ### Routes
 A tree of tasks, habits, routines and resources that guide the user on a self guided mastery of certain skills. The user can make any custom tree but the primary use case is for people to progressively overload skills much in the same way they would with weights in a gym. For example a "mindfulness" tree might start with a habit of 1 minute a day of meditation and a resource such as a link to a YouTube video of why you should practice meditating. This can be expanded for anything such as musical instruments, languages or chess/go/shogi, anything the user can imagine to create a plan for themselves.
 
@@ -24,6 +27,12 @@ What I actually managed to implement so far:
 - Display routes and their steps
 - Delete steps
 - Delete routes
+As well as:
+- Placeholder pages for meditation, runs and weightlifting
+
+
+
+
 
 ## Older
 ### Food Diary
