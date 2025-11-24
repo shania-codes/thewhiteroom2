@@ -19,25 +19,25 @@ What I actually managed to implement so far:
 
 ## Older
 ### Food Diary
-<video controls src="demos/food_diary_demo.mp4" title="Food Diary Demo 1"></video>
+![Food Diary Demo 1](./demos/food_diary_demo.gif)
 
 ### Kitchen Inventory
-<video controls src="demos/kitchen_inventory_demo.mp4" title="Kitchen Inventory Demo"></video>
+![Kitchen Inventory Demo](./demos/kitchen_inventory_demo.gif)
 
 #### Food Diary Demo 2
 Now that there is items in kitchen inventory you can add them to food diary
-<video controls src="demos/food_diary_demo2.mp4" title="Food Diary Demo 2"></video>
+![Food Diary Demo 2](./demos/food_diary_demo2.gif)
 Adding it to your inventory decrements the quantity added from the amount left in your inventory.
 
 ### Recipes
-<video controls src="demos/recipes_demo.mp4" title="Recipes Demo"></video>
+![Recipes Demo](./demos/recipes_demo.gif)
 Work in progress, in the future it will be able to calculate an estimation for the calories and macros of the recipe based on the details saved about the ingredients in kitchen inventory. It will also be able to just add an instance of the recipe to your inventory and from there to your food diary with those calculated calories and macros, and if you made multiple servings then you can easily add it to food diary once you eat the other serving in 3 clicks. 
 
 ### Tasks
-<video controls src="demos/tasks_demo.mp4" title="Tasks Demo"></video>
+![Tasks Demo](./demos/tasks_demo.gif)
 
 ### Self Reward System
-<video controls src="demos/rewards_demo.mp4" title="Title"></video>
+![Self Reward System Demo](./demos/rewards_demo.gif)
   
 Need to update logic to change "-5 coins spent" to "added 5 coins".
 Not shown: Reward images
