@@ -4,7 +4,6 @@ health_bp = Blueprint("health", __name__)
 
 @health_bp.route("/exercise/weightlifting", methods=["GET", "POST"])
 def weightlifting():
-    # Add Linear progression routines and other routines
     return render_template("weightlifting.html")
 
 

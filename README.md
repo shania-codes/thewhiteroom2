@@ -9,7 +9,20 @@ Has features for calories and macro tracking, water tracking, kitchen inventory 
 # Features
 ## Week 13 - Winter Theme:
 ### Meditation
-A timer that supports playing custom audios at the start, end, and at **customisable** time intervals. Can also be used to make things like custom couch to 5k routines with custom voices such as TTS or anything else the user can imagine.
+A timer that supports playing custom audios at the start, end, and at **customisable** time intervals. Can also be used to make things like custom couch to 5k routines with custom voices such as TTS or anything else the user can imagine. However the namesake of the feature meditation fits the winter theme as some people suffer from seasonal affective depression and meditation can help with that, and so can the other features I am aiming to implement this week: weightlifting tracking and run tracking (using GPS data such as from a smartwatch).
+
+### Weightlifting
+Support for linear progression routines (like starting strength and routines inspired by it) as well as custom exercises and workout templates.
+
+### Running
+Support for GPS data from smart watches.
+If possible, this is just the readme with my ideas, it will:
+- Shows where you ran assuming GPS data can do that, 
+- Your pace (km/h and min/km no option for miles), 
+- Heart rate if that is included in the file format
+- Step count
+- Distance (km only)
+
 
 
 ## Week 12 - Framework Theme:
