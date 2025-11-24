@@ -1,6 +1,8 @@
 # The White Room
 > An all-in-one Self Management Framework
 
+Live Demo: http://46.101.90.169:5000/dashboard
+
 Has features for calories and macro tracking, water tracking, kitchen inventory tracking (Product details including calories and macros per serving and per 100g and price and purchase location and price per item and servings per item and whether it is a tool or not also it generates a shopping list based on what you have in your inventory and saved products), recipe saving using saved products (not very good yet but it's not done), task management with name, description, and due dates as well as marking as complete or incomplete, self reward system with rewards, punishments, and log entries that don't affect coin balance, interval timers page that allow you to add multiple timers for different breaks, multi user chore management system with steps for the chores and RRULEs for repetition of the chores (work in progress, needs a GUI for generating the RRULEs behind the scene for you), settings page to change saved user data from initial setup page.
 
 
@@ -23,6 +25,10 @@ What I actually managed to implement so far:
 - Delete steps
 - Delete routes
 
+### Routes
+- Placeholder pages for meditation, runs and weightlifting
+
+## Older
 ### Food Diary
 ![Food Diary Demo 1](./demos/food_diary_demo.gif)
 
