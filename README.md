@@ -37,7 +37,8 @@ Work in progress, in the future it will be able to calculate an estimation for t
 <video controls src="demos/tasks_demo.mp4" title="Tasks Demo"></video>
 
 ### Self Reward System
-![rewards demo](./demos/rewards_demo.png)
+<video controls src="demos/rewards_demo.mp4" title="Title"></video>
+  
 Need to update logic to change "-5 coins spent" to "added 5 coins".
 Not shown: Reward images
 
