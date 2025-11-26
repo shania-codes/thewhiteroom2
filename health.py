@@ -15,4 +15,9 @@ def runs():
 # Interval Timers merge? (Trixie Timer)
 @health_bp.route("/exercise/meditation", methods=["GET", "POST"])
 def meditation():
+
+
+    # Fake data for testing and helping me figure out schema
+    sessions = [[1, "5 Minute Meditation", ]]
+
     return render_template("meditation.html")
