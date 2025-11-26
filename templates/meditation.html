@@ -4,10 +4,45 @@
 Meditation
 {% endblock %}
 
-
+{% block header %}
+Meditation
+{% endblock %}
 {% block body %}
-<h1>Meditation</h1>
-<a href="/dashboard">Back to Dashbaord</a>
+<a href="/dashboard">Back to Dashbaord</a><br><br>
 
 
+
+<p>Create <strong>sessions</strong> which are an ordered list of timers and audio files that can be used to <em>progressively overload</em> your meditation sessions and help your feelings of progression with your mindfulness.</p>
+
+<br>
+
+<p>These <strong>sessions</strong> don't have to just be guided or belled meditations, you could also use it to create a custom couch to five 5k routine with a TTS/AI voice of your favourite character as your personal running coach or gym coach (assuming you can correctly estimate the time it takes to do your sets, recommendation: just slightly overestimate them, more rest isn't a bad thing, unless you are short on time).</p>
+
+<!-- this is helpful to have sessions you use the most and are likely to want to do again such as daily meditations, whereas one time or two time only things such as a couch to 5k run might require a bit of extra time to access which is okay as they are less frequently accessed.
+
+<h2>Most Frequent Sessions</h2>
+
+<ol>
+    <li>Most frequent 3 sessions here</li>
+</ol>
+
+-->
+
+
+<br>
+<ul>
+<!-- for session in sessions-->
+    <li>Session Name - Description(optional) [tag(s)] <small>length (m)</small></li>
+</ul>
+
+<br>
+<hr>
+<p>Inspired by <a href="https://meditofoundation.org" rel="noreferrer">Medito</a>, but I don't like the direction they took it so I made something that can be used for a similar purpose (free forever mindful meditation) and took it further in a direction I do like (custom audio and custom lengths between audio). </p>
+
+<br>
+<a href="https://medito.app" rel="noreferrer">Medito Mobile App for smartphone useDs
+    
+<br>
+
+<img src="https://meditofoundation.org/media/site/1a3d154caa-1718557087/introduction-960x.png" alt="Medito Logo" height="300"></a>
 {% endblock %}
