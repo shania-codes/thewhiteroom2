@@ -18,15 +18,25 @@ Meditation
 
 <p>These <strong>sessions</strong> don't have to just be guided or belled meditations, you could also use it to create a custom couch to five 5k routine with a TTS/AI voice of your favourite character as your personal running coach or gym coach (assuming you can correctly estimate the time it takes to do your sets, recommendation: just slightly overestimate them, more rest isn't a bad thing, unless you are short on time).</p>
 
-<!-- this is helpful to have sessions you use the most and are likely to want to do again such as daily meditations, whereas one time or two time only things such as a couch to 5k run might require a bit of extra time to access which is okay as they are less frequently accessed.
 
 <h2>Most Frequent Sessions</h2>
 
 <ol>
-    <li>Most frequent 3 sessions here</li>
+    {% for id in max %}
+        {% for session in sessions %}
+            {% if session[0] == id %}
+                <li>
+                    {{ session[1] }}
+                    {% if session[2] != "" %}<em>- {{session[2]}}</em>{% endif %}
+                    <small>({{session[4]}} seconds)</small><br>
+                    {% if session[3] != "" %}Tags: {% for tag in session[3] %}{{tag}}, {% endfor %}{% endif %}
+                    Played {{session[5]}} times
+                </li>
+            {% endif %}
+        {% endfor %}
+    {% endfor %}
 </ol>
 
--->
 
 
 <br>

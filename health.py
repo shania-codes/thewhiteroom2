@@ -22,6 +22,8 @@ def meditation():
 
 
     # Fake data for testing and helping me figure out schema
-    sessions = [[1, "5 Minute Meditation", "Mindfulness meditation session with tibetan bells and AI TTS voice", ("Mindfulness Meditations", "AI TTS"), 600]]
+    sessions = [[1, "5 Minute Meditation", "Mindfulness meditation session with tibetan bells and AI TTS voice", ("Mindfulness Meditations", "AI TTS"), 300, 12], [2, "10 Minute Meditation", "Mindfulness meditation session with tibetan bells and AI TTS voice", ("Mindfulness Meditations", "AI TTS"), 600, 7], [3, "15 Minute Meditation", "Mindfulness meditation session with tibetan bells and AI TTS voice", ("Mindfulness Meditations", "AI TTS"), 900, 5]]
 
-    return render_template("meditation.html", sessions=sessions)
+    max = (1, 2, 3)
+
+    return render_template("meditation.html", sessions=sessions, max=max)
