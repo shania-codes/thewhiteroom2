@@ -32,12 +32,23 @@ Meditation
 <br>
 <h2>All Sessions</h2>
 <ul>
-<!-- for session in sessions-->
-    <li>Session Name - Description(if input) [tag(s) if any] <small>length (m)</small></li>
+{%for session in sessions%}
+    <li>
+        {{session[1]}}
+        {% if session[2] != "" %}<em>- {{session[2]}}</em>{%endif%}
+        <small>({{session[4]}} seconds)</small><br>
+        {% if session[3] != "" %}Tags: {% for tag in session[3] %}{{tag}}, {%endfor%}{%endif%}
+        
+        <form method="post">
+            <input hidden name="iforgotwhatthisbuttonwasfor" value="{{session[0]}}">
+            <button type="submit">button</button>
+        </form>
+    </li>
+{%endfor%}
 </ul>
 
-<br><br><br>
-<hr>
+<br>
+<br><hr><br>
 <p>Inspired by <a href="https://meditofoundation.org" rel="noreferrer">Medito</a>, but I don't like the direction they took it so I made something that can be used for a similar purpose (free forever mindfulness meditation) and took it further in a direction I do like (custom audio and custom lengths between audio, plus it's self hosted). </p>
 
 <br>

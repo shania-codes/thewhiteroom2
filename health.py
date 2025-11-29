@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template
+from flask import Blueprint, render_template, request
 
 health_bp = Blueprint("health", __name__)
 
@@ -16,8 +16,12 @@ def runs():
 @health_bp.route("/exercise/meditation", methods=["GET", "POST"])
 def meditation():
 
+    if request.method == "POST":
+        print(request.form)
+
+
 
     # Fake data for testing and helping me figure out schema
-    sessions = [[1, "5 Minute Meditation", ]]
+    sessions = [[1, "5 Minute Meditation", "Mindfulness meditation session with tibetan bells and AI TTS voice", ("Mindfulness Meditations", "AI TTS"), 600]]
 
-    return render_template("meditation.html")
+    return render_template("meditation.html", sessions=sessions)
